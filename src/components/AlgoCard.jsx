@@ -30,6 +30,9 @@ function hexToHsl(hex) {
 }
 
 function AlgoCard({ algo }) {
+  const CardTag = algo.href ? "a" : "div"
+  const cardProps = algo.href ? { href: algo.href } : {}
+
   return (
     <BorderGlow
       glowColor={hexToHsl(algo.accent)}
@@ -39,9 +42,10 @@ function AlgoCard({ algo }) {
       glowRadius={34}
       fillOpacity={0.35}
     >
-      <div
-        className="algo-card"
+      <CardTag
+        className={`algo-card ${algo.href ? "algo-card-link" : ""}`}
         style={{ "--accent": algo.accent }}
+        {...cardProps}
       >
         <div className="card-glow" />
 
@@ -66,7 +70,7 @@ function AlgoCard({ algo }) {
         <div className="card-meta">
           <span className="meta-item">⏱ {algo.complexity}</span>
         </div>
-      </div>
+      </CardTag>
     </BorderGlow>
   )
 }

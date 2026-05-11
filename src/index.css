@@ -324,6 +324,12 @@ body {
   transition: box-shadow 0.22s;
 }
 
+.algo-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .algo-card:hover {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
 }

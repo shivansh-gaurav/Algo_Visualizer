@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Selection Sort Visualizer</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap");
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #080912;
+        --panel: #121421;
+        --panel-2: #171a2a;
+        --text: #f8fafc;
+        --muted: rgba(248, 250, 252, 0.62);
+        --soft: rgba(248, 250, 252, 0.1);
+        --cyan: #22d3ee;
+        --green: #4ade80;
+        --pink: #f472b6;
+        --amber: #fbbf24;
+        --blue: #818cf8;
+        --danger: #fb7185;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 8%, rgba(34, 211, 238, 0.18), transparent 30rem),
+          radial-gradient(circle at 85% 18%, rgba(244, 114, 182, 0.14), transparent 28rem),
+          linear-gradient(135deg, #080912 0%, #111525 58%, #0f1618 100%);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .back-link {
+        color: rgba(248, 250, 252, 0.76);
+        text-decoration: none;
+        border: 1px solid var(--soft);
+        border-radius: 8px;
+        padding: 9px 12px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .title h1 {
+        font-family: "Syne", system-ui, sans-serif;
+        font-size: clamp(2rem, 5vw, 4.4rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .title p {
+        max-width: 680px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-top: 14px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(330px, 0.75fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .panel {
+        background: rgba(18, 20, 33, 0.86);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 8px;
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+      }
+
+      .visual-panel {
+        min-height: 620px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stat {
+        padding: 18px;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stat:last-child {
+        border-right: 0;
+      }
+
+      .stat span {
+        display: block;
+        color: rgba(248, 250, 252, 0.45);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 5px;
+      }
+
+      .stat strong {
+        font-size: 1.25rem;
+      }
+
+      .stage {
+        position: relative;
+        min-height: 360px;
+        padding: 30px 18px 22px;
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        gap: clamp(8px, 1.5vw, 16px);
+      }
+
+      .bar-wrap {
+        width: min(54px, 10vw);
+        height: 100%;
+        min-width: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .bar {
+        width: 100%;
+        min-height: 28px;
+        border-radius: 7px 7px 4px 4px;
+        background: linear-gradient(180deg, #60a5fa, #2563eb);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+        transition:
+          height 300ms ease,
+          background 220ms ease,
+          transform 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .bar-label {
+        color: rgba(248, 250, 252, 0.76);
+        font-weight: 700;
+      }
+
+      .bar-wrap.current .bar {
+        background: linear-gradient(180deg, var(--cyan), #0891b2);
+        transform: translateY(-10px);
+        box-shadow: 0 14px 32px rgba(34, 211, 238, 0.26);
+      }
+
+      .bar-wrap.minimum .bar {
+        background: linear-gradient(180deg, var(--amber), #d97706);
+        transform: translateY(-14px);
+        box-shadow: 0 14px 32px rgba(251, 191, 36, 0.28);
+      }
+
+      .bar-wrap.compare .bar {
+        background: linear-gradient(180deg, var(--pink), #db2777);
+        transform: translateY(-8px);
+      }
+
+      .bar-wrap.swap .bar {
+        background: linear-gradient(180deg, var(--danger), #e11d48);
+        transform: translateY(-18px) scale(1.04);
+      }
+
+      .bar-wrap.sorted .bar {
+        background: linear-gradient(180deg, var(--green), #16a34a);
+      }
+
+      .legend {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 18px 18px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: rgba(248, 250, 252, 0.68);
+        font-size: 0.86rem;
+      }
+
+      .key {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      .controls {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .control-buttons {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border-radius: 8px;
+        min-height: 42px;
+        padding: 0 15px;
+        cursor: pointer;
+        transition:
+          transform 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.32);
+      }
+
+      .btn.primary {
+        background: var(--blue);
+        color: #050716;
+        border-color: transparent;
+        font-weight: 700;
+      }
+
+      .speed {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .speed input {
+        accent-color: var(--cyan);
+        width: 130px;
+      }
+
+      .side-panel {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+      }
+
+      .step-card {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .step-card span {
+        color: var(--cyan);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .step-card h2 {
+        margin-top: 8px;
+        font-size: 1.35rem;
+      }
+
+      .step-card p {
+        margin-top: 10px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .code {
+        padding: 16px 0;
+        overflow: auto;
+        background: rgba(5, 7, 18, 0.52);
+      }
+
+      .code-line {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 12px;
+        padding: 8px 18px 8px 0;
+        color: rgba(248, 250, 252, 0.58);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        border-left: 4px solid transparent;
+        white-space: pre;
+      }
+
+      .line-no {
+        text-align: right;
+        color: rgba(248, 250, 252, 0.32);
+        user-select: none;
+      }
+
+      .code-line.active {
+        background: rgba(129, 140, 248, 0.16);
+        border-left-color: var(--blue);
+        color: #ffffff;
+      }
+
+      .code-line.done {
+        color: rgba(74, 222, 128, 0.72);
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .visual-panel {
+          min-height: 560px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          width: min(100% - 20px, 1180px);
+          padding: 18px 0;
+        }
+
+        .topbar,
+        .controls {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat:nth-child(2) {
+          border-right: 0;
+        }
+
+        .stat:nth-child(-n + 2) {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stage {
+          gap: 7px;
+          padding-inline: 10px;
+        }
+
+        .bar-wrap {
+          min-width: 24px;
+        }
+
+        .bar-label {
+          font-size: 0.82rem;
+        }
+
+        .speed {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="title">
+          <h1>Selection Sort Visualizer</h1>
+          <p>
+            Watch each pass choose the smallest remaining value, swap it into
+            place, and lock the sorted section from left to right.
+          </p>
+        </div>
+        <a class="back-link" href="../../index.html">Back</a>
+      </header>
+
+      <section class="layout" aria-label="Selection sort visualizer">
+        <div class="panel visual-panel">
+          <div class="stats">
+            <div class="stat">
+              <span>Pass</span>
+              <strong id="passValue">0 / 7</strong>
+            </div>
+            <div class="stat">
+              <span>Comparisons</span>
+              <strong id="compareValue">0</strong>
+            </div>
+            <div class="stat">
+              <span>Swaps</span>
+              <strong id="swapValue">0</strong>
+            </div>
+            <div class="stat">
+              <span>Min index</span>
+              <strong id="minValue">-</strong>
+            </div>
+          </div>
+
+          <div class="stage" id="stage" aria-live="polite"></div>
+
+          <div class="legend" aria-label="Color key">
+            <span class="legend-item"><span class="key" style="background:#22d3ee"></span>current pass</span>
+            <span class="legend-item"><span class="key" style="background:#f472b6"></span>comparing</span>
+            <span class="legend-item"><span class="key" style="background:#fbbf24"></span>smallest</span>
+            <span class="legend-item"><span class="key" style="background:#fb7185"></span>swap</span>
+            <span class="legend-item"><span class="key" style="background:#4ade80"></span>sorted</span>
+          </div>
+
+          <div class="controls">
+            <div class="control-buttons">
+              <button class="btn primary" id="playBtn" type="button">Play</button>
+              <button class="btn" id="stepBtn" type="button">Next Step</button>
+              <button class="btn" id="resetBtn" type="button">Reset</button>
+              <button class="btn" id="randomBtn" type="button">New Array</button>
+            </div>
+            <label class="speed">
+              Speed
+              <input id="speedInput" type="range" min="180" max="1300" step="40" value="700" />
+            </label>
+          </div>
+        </div>
+
+        <aside class="panel side-panel">
+          <div class="step-card">
+            <span id="stepLabel">Ready</span>
+            <h2 id="stepTitle">Start the animation</h2>
+            <p id="stepText">Press Play or Next Step to see the active code line and array state change together.</p>
+          </div>
+
+          <div class="code" id="codePanel" aria-label="Selection sort code"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const codeLines = [
+        "for i = 0 to n - 2",
+        "  minIndex = i",
+        "  for j = i + 1 to n - 1",
+        "    if array[j] < array[minIndex]",
+        "      minIndex = j",
+        "  if minIndex != i",
+        "    swap array[i] and array[minIndex]",
+        "  mark array[i] as sorted",
+      ];
+
+      const initialArray = [52, 26, 74, 18, 61, 39, 84, 47];
+      let values = [...initialArray];
+      let steps = [];
+      let currentStep = 0;
+      let timer = null;
+      let isPlaying = false;
+
+      const stage = document.querySelector("#stage");
+      const codePanel = document.querySelector("#codePanel");
+      const playBtn = document.querySelector("#playBtn");
+      const stepBtn = document.querySelector("#stepBtn");
+      const resetBtn = document.querySelector("#resetBtn");
+      const randomBtn = document.querySelector("#randomBtn");
+      const speedInput = document.querySelector("#speedInput");
+
+      const passValue = document.querySelector("#passValue");
+      const compareValue = document.querySelector("#compareValue");
+      const swapValue = document.querySelector("#swapValue");
+      const minValue = document.querySelector("#minValue");
+      const stepLabel = document.querySelector("#stepLabel");
+      const stepTitle = document.querySelector("#stepTitle");
+      const stepText = document.querySelector("#stepText");
+
+      function createStep(config) {
+        return {
+          array: [...config.array],
+          activeLine: config.activeLine,
+          i: config.i ?? null,
+          j: config.j ?? null,
+          min: config.min ?? null,
+          sortedUntil: config.sortedUntil ?? -1,
+          compareCount: config.compareCount ?? 0,
+          swapCount: config.swapCount ?? 0,
+          swap: config.swap ?? [],
+          label: config.label,
+          title: config.title,
+          text: config.text,
+        };
+      }
+
+      function buildSteps(source) {
+        const arr = [...source];
+        const output = [];
+        let compareCount = 0;
+        let swapCount = 0;
+
+        output.push(createStep({
+          array: arr,
+          activeLine: 1,
+          label: "Ready",
+          title: "Begin selection sort",
+          text: "The algorithm scans the unsorted part and selects the smallest value for each position.",
+        }));
+
+        for (let i = 0; i < arr.length - 1; i += 1) {
+          output.push(createStep({
+            array: arr,
+            activeLine: 1,
+            i,
+            sortedUntil: i - 1,
+            compareCount,
+            swapCount,
+            label: `Pass ${i + 1}`,
+            title: `Fill position ${i}`,
+            text: `Everything before index ${i} is sorted. Now find the smallest value from index ${i} onward.`,
+          }));
+
+          let minIndex = i;
+          output.push(createStep({
+            array: arr,
+            activeLine: 2,
+            i,
+            min: minIndex,
+            sortedUntil: i - 1,
+            compareCount,
+            swapCount,
+            label: `Pass ${i + 1}`,
+            title: `Set minIndex to ${i}`,
+            text: `Start by assuming ${arr[i]} at index ${i} is the smallest remaining value.`,
+          }));
+
+          for (let j = i + 1; j < arr.length; j += 1) {
+            output.push(createStep({
+              array: arr,
+              activeLine: 3,
+              i,
+              j,
+              min: minIndex,
+              sortedUntil: i - 1,
+              compareCount,
+              swapCount,
+              label: `Pass ${i + 1}`,
+              title: `Move j to index ${j}`,
+              text: `Compare the current candidate ${arr[minIndex]} with ${arr[j]}.`,
+            }));
+
+            compareCount += 1;
+            output.push(createStep({
+              array: arr,
+              activeLine: 4,
+              i,
+              j,
+              min: minIndex,
+              sortedUntil: i - 1,
+              compareCount,
+              swapCount,
+              label: `Comparison ${compareCount}`,
+              title: `${arr[j]} < ${arr[minIndex]}?`,
+              text: arr[j] < arr[minIndex]
+                ? "Yes. This value becomes the new smallest candidate."
+                : "No. Keep the current minIndex and continue scanning.",
+            }));
+
+            if (arr[j] < arr[minIndex]) {
+              minIndex = j;
+              output.push(createStep({
+                array: arr,
+                activeLine: 5,
+                i,
+                j,
+                min: minIndex,
+                sortedUntil: i - 1,
+                compareCount,
+                swapCount,
+                label: `New minimum`,
+                title: `minIndex is now ${j}`,
+                text: `${arr[j]} is the smallest value seen in this pass so far.`,
+              }));
+            }
+          }
+
+          output.push(createStep({
+            array: arr,
+            activeLine: 6,
+            i,
+            min: minIndex,
+            sortedUntil: i - 1,
+            compareCount,
+            swapCount,
+            label: `Pass ${i + 1}`,
+            title: minIndex === i ? "No swap needed" : "Smallest value found",
+            text: minIndex === i
+              ? `${arr[i]} is already in the correct position.`
+              : `${arr[minIndex]} at index ${minIndex} belongs at index ${i}.`,
+          }));
+
+          if (minIndex !== i) {
+            [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+            swapCount += 1;
+            output.push(createStep({
+              array: arr,
+              activeLine: 7,
+              i,
+              min: minIndex,
+              sortedUntil: i - 1,
+              compareCount,
+              swapCount,
+              swap: [i, minIndex],
+              label: `Swap ${swapCount}`,
+              title: `Swap indexes ${i} and ${minIndex}`,
+              text: `The smallest remaining value is moved into its final place for this pass.`,
+            }));
+          }
+
+          output.push(createStep({
+            array: arr,
+            activeLine: 8,
+            i,
+            min: minIndex,
+            sortedUntil: i,
+            compareCount,
+            swapCount,
+            label: `Sorted index ${i}`,
+            title: `${arr[i]} is locked in`,
+            text: `Index ${i} is finished. Selection sort never needs to move it again.`,
+          }));
+        }
+
+        output.push(createStep({
+          array: arr,
+          activeLine: 8,
+          sortedUntil: arr.length - 1,
+          compareCount,
+          swapCount,
+          label: "Complete",
+          title: "Array sorted",
+          text: "Every pass placed one smallest remaining value into its final position.",
+        }));
+
+        return output;
+      }
+
+      function renderCode(activeLine, doneLine) {
+        codePanel.innerHTML = codeLines
+          .map((line, index) => {
+            const lineNumber = index + 1;
+            const active = lineNumber === activeLine ? " active" : "";
+            const done = lineNumber < doneLine ? " done" : "";
+            return `<div class="code-line${active}${done}">
+              <span class="line-no">${lineNumber}</span><span>${line}</span>
+            </div>`;
+          })
+          .join("");
+      }
+
+      function renderBars(step) {
+        const maxValue = Math.max(...step.array);
+        stage.innerHTML = step.array
+          .map((value, index) => {
+            const classes = ["bar-wrap"];
+
+            if (index <= step.sortedUntil) classes.push("sorted");
+            if (index === step.i) classes.push("current");
+            if (index === step.j) classes.push("compare");
+            if (index === step.min) classes.push("minimum");
+            if (step.swap.includes(index)) classes.push("swap");
+
+            return `
+              <div class="${classes.join(" ")}" aria-label="Value ${value}">
+                <div class="bar" style="height:${Math.max(20, (value / maxValue) * 310)}px"></div>
+                <div class="bar-label">${value}</div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function render() {
+        const step = steps[currentStep];
+        const passTotal = values.length - 1;
+        const pass = step.sortedUntil >= passTotal ? passTotal : Math.max(0, (step.i ?? 0) + 1);
+
+        renderBars(step);
+        renderCode(step.activeLine, step.activeLine);
+
+        passValue.textContent = `${pass} / ${passTotal}`;
+        compareValue.textContent = step.compareCount;
+        swapValue.textContent = step.swapCount;
+        minValue.textContent = step.min === null ? "-" : step.min;
+        stepLabel.textContent = step.label;
+        stepTitle.textContent = step.title;
+        stepText.textContent = step.text;
+
+        stepBtn.disabled = currentStep >= steps.length - 1;
+        playBtn.textContent = isPlaying ? "Pause" : "Play";
+      }
+
+      function goNext() {
+        if (currentStep < steps.length - 1) {
+          currentStep += 1;
+          render();
+          return;
+        }
+
+        stopPlaying();
+      }
+
+      function startPlaying() {
+        isPlaying = true;
+        render();
+        timer = window.setInterval(goNext, Number(speedInput.value));
+      }
+
+      function stopPlaying() {
+        isPlaying = false;
+        window.clearInterval(timer);
+        timer = null;
+      }
+
+      function restart(newValues) {
+        stopPlaying();
+        values = [...newValues];
+        steps = buildSteps(values);
+        currentStep = 0;
+        render();
+      }
+
+      function randomArray() {
+        const next = Array.from({ length: 8 }, () => Math.floor(Math.random() * 75) + 15);
+        restart(next);
+      }
+
+      playBtn.addEventListener("click", () => {
+        if (isPlaying) {
+          stopPlaying();
+        } else {
+          if (currentStep >= steps.length - 1) currentStep = 0;
+          startPlaying();
+        }
+      });
+
+      stepBtn.addEventListener("click", () => {
+        stopPlaying();
+        goNext();
+      });
+
+      resetBtn.addEventListener("click", () => restart(values));
+      randomBtn.addEventListener("click", randomArray);
+      speedInput.addEventListener("input", () => {
+        if (!isPlaying) return;
+        stopPlaying();
+        startPlaying();
+      });
+
+      restart(values);
+    </script>
+  </body>
+</html>

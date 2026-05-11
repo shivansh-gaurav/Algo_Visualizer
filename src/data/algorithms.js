@@ -21,6 +21,7 @@ export const algorithms = [
     icon: "◎",
     complexity: "O(n²)",
     difficulty: 1,
+    href: "/src/selection_sort/index.html",
   },
   {
     id: "insertion",

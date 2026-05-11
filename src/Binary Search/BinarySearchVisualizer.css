@@ -1,0 +1,306 @@
+.bs-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top right, rgba(163,230,53,0.14), transparent 30rem),
+    #0a0a12;
+}
+
+.bs-topbar {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bs-ghost-btn,
+.bs-controls button {
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  padding: 0 1rem;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.78);
+  cursor: pointer;
+  font: 600 13px 'Space Grotesk', sans-serif;
+  transition: border-color 0.18s, color 0.18s, transform 0.18s;
+}
+
+.bs-ghost-btn:hover,
+.bs-controls button:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.34);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.bs-chip {
+  border: 1px solid rgba(163,230,53,0.34);
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: #d9f99d;
+  background: rgba(163,230,53,0.1);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bs-hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(460px, 1.18fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.bs-copy,
+.bs-stage,
+.bs-controls {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(19,19,31,0.78);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+}
+
+.bs-copy {
+  border-radius: 18px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bs-copy h1 {
+  margin: 0.2rem 0 1rem;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  line-height: 1;
+  color: #fff;
+}
+
+.bs-copy p:not(.section-label) {
+  color: rgba(255,255,255,0.56);
+  line-height: 1.7;
+  max-width: 34rem;
+}
+
+.bs-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.bs-stats span {
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  color: color-mix(in srgb, var(--accent) 78%, white);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bs-stage {
+  border-radius: 18px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bs-array {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.bs-cell {
+  min-width: 0;
+  min-height: 96px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.65rem 0.35rem;
+  text-align: center;
+  background: rgba(255,255,255,0.06);
+  transition: opacity 0.24s ease, transform 0.24s ease, background 0.24s ease, border-color 0.24s ease;
+}
+
+.bs-cell.discarded {
+  opacity: 0.28;
+}
+
+.bs-cell.active {
+  border-color: rgba(163,230,53,0.32);
+  background: rgba(163,230,53,0.1);
+}
+
+.bs-cell.middle {
+  transform: translateY(-10px);
+  border-color: rgba(250,204,21,0.72);
+  background: linear-gradient(180deg, rgba(254,243,199,0.22), rgba(245,158,11,0.16));
+}
+
+.bs-cell.found {
+  border-color: rgba(52,211,153,0.82);
+  background: linear-gradient(180deg, rgba(187,247,208,0.24), rgba(52,211,153,0.2));
+}
+
+.bs-index {
+  color: rgba(255,255,255,0.35);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bs-cell strong {
+  color: #fff;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+}
+
+.bs-window {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+
+.bs-window span {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 0.7rem;
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.05);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.bs-step-panel {
+  margin-top: 1.2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 1rem;
+}
+
+.bs-step-count {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgba(255,255,255,0.38);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bs-step-panel p {
+  min-height: 28px;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.5;
+}
+
+.bs-progress-track {
+  height: 8px;
+  margin-top: 0.9rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+}
+
+.bs-progress-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a3e635, #38bdf8);
+  transition: width 0.25s ease;
+}
+
+.bs-controls {
+  max-width: 1100px;
+  margin: 1rem auto 0;
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.bs-controls .bs-primary-btn {
+  border-color: #65a30d;
+  background: #65a30d;
+  color: #fff;
+}
+
+.bs-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.bs-target-control {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  padding: 0 1rem;
+  color: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.06);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bs-target-control select {
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  color: #fff;
+  background: #13131f;
+  font: inherit;
+}
+
+@media (max-width: 900px) {
+  .bs-page {
+    padding: 1rem;
+  }
+
+  .bs-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .bs-copy,
+  .bs-stage {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .bs-array {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bs-cell {
+    min-height: 76px;
+  }
+}
+
+@media (max-width: 559px) {
+  .bs-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bs-window {
+    grid-template-columns: 1fr;
+  }
+
+  .bs-controls button,
+  .bs-target-control {
+    flex: 1 1 calc(50% - 0.75rem);
+  }
+}

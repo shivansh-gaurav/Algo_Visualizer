@@ -1,0 +1,315 @@
+.hanoi-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top right, rgba(45,212,191,0.16), transparent 30rem),
+    #0a0a12;
+}
+
+.hanoi-topbar {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hanoi-ghost-btn,
+.hanoi-controls button {
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  padding: 0 1rem;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.78);
+  cursor: pointer;
+  font: 600 13px 'Space Grotesk', sans-serif;
+  transition: border-color 0.18s, color 0.18s, transform 0.18s;
+}
+
+.hanoi-ghost-btn:hover,
+.hanoi-controls button:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.34);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.hanoi-chip {
+  border: 1px solid rgba(45,212,191,0.34);
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: #99f6e4;
+  background: rgba(45,212,191,0.1);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hanoi-hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(450px, 1.18fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.hanoi-copy,
+.hanoi-stage,
+.hanoi-controls {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(19,19,31,0.78);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+}
+
+.hanoi-copy {
+  border-radius: 18px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hanoi-copy h1 {
+  margin: 0.2rem 0 1rem;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  line-height: 1;
+  color: #fff;
+}
+
+.hanoi-copy p:not(.section-label) {
+  color: rgba(255,255,255,0.56);
+  line-height: 1.7;
+  max-width: 34rem;
+}
+
+.hanoi-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.hanoi-stats span {
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  color: color-mix(in srgb, var(--accent) 78%, white);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hanoi-stage {
+  border-radius: 18px;
+  padding: 1.5rem;
+}
+
+.hanoi-board {
+  min-height: 410px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.hanoi-peg {
+  position: relative;
+  min-width: 0;
+  height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 0.35rem 1.8rem;
+}
+
+.hanoi-rod {
+  position: absolute;
+  bottom: 48px;
+  width: 12px;
+  height: 255px;
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.12));
+}
+
+.hanoi-stack {
+  width: 100%;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hanoi-disk {
+  width: calc(34% + (var(--disk-size) / var(--disk-total)) * 58%);
+  height: 34px;
+  margin-top: 6px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #06201d;
+  font-size: 12px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #ccfbf1, #2dd4bf);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 12px 20px rgba(0,0,0,0.22);
+  transition: width 0.24s ease, transform 0.24s ease, background 0.24s ease;
+}
+
+.hanoi-disk.just-moved {
+  background: linear-gradient(180deg, #fef3c7, #f59e0b);
+  transform: translateY(-8px);
+}
+
+.hanoi-base {
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  position: relative;
+  z-index: 2;
+}
+
+.hanoi-label {
+  margin-top: 0.7rem;
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hanoi-step-panel {
+  margin-top: 1.2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 1rem;
+}
+
+.hanoi-step-count {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgba(255,255,255,0.38);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hanoi-step-panel p {
+  min-height: 28px;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.5;
+}
+
+.hanoi-progress-track {
+  height: 8px;
+  margin-top: 0.9rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+}
+
+.hanoi-progress-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2dd4bf, #38bdf8);
+  transition: width 0.25s ease;
+}
+
+.hanoi-controls {
+  max-width: 1100px;
+  margin: 1rem auto 0;
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.hanoi-controls .hanoi-primary-btn {
+  border-color: #0d9488;
+  background: #0d9488;
+  color: #fff;
+}
+
+.hanoi-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.hanoi-disk-control {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  padding: 0 1rem;
+  color: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.06);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hanoi-disk-control input {
+  accent-color: #2dd4bf;
+}
+
+.hanoi-disk-control span {
+  min-width: 1ch;
+  color: #99f6e4;
+}
+
+@media (max-width: 900px) {
+  .hanoi-page {
+    padding: 1rem;
+  }
+
+  .hanoi-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hanoi-copy,
+  .hanoi-stage {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 559px) {
+  .hanoi-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hanoi-board {
+    min-height: 330px;
+    gap: 0.35rem;
+  }
+
+  .hanoi-peg {
+    height: 300px;
+    padding-inline: 0.1rem;
+  }
+
+  .hanoi-rod {
+    height: 210px;
+  }
+
+  .hanoi-disk {
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .hanoi-controls button,
+  .hanoi-disk-control {
+    flex: 1 1 calc(50% - 0.75rem);
+  }
+}

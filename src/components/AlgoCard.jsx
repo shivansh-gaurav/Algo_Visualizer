@@ -29,9 +29,11 @@ function hexToHsl(hex) {
   return `${Math.round((hue + 360) % 360)} ${Math.round(saturation * 100)} ${Math.round(lightness * 100)}`
 }
 
-function AlgoCard({ algo }) {
-  const CardTag = algo.href ? "a" : "div"
-  const cardProps = algo.href ? { href: algo.href } : {}
+function AlgoCard({ algo, onSelect }) {
+  const CardTag = algo.href ? "a" : "button"
+  const cardProps = algo.href
+    ? { href: algo.href }
+    : { type: "button", onClick: () => onSelect?.(algo) }
 
   return (
     <BorderGlow

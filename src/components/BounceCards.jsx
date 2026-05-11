@@ -82,6 +82,7 @@ function useCardPattern() {
 
 function BounceCards({
   items,
+  onSelect,
   animationDelay = 0.25,
   animationStagger = 0.06,
   easeType = "elastic.out(1, 0.8)",
@@ -176,7 +177,7 @@ function BounceCards({
               onMouseEnter={() => pushSiblings(groupIndex, cardIndex)}
               onMouseLeave={() => resetSiblings(groupIndex)}
             >
-              <AlgoCard algo={algo} />
+              <AlgoCard algo={algo} onSelect={onSelect} />
             </div>
           ))}
         </div>

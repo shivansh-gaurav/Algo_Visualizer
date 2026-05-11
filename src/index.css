@@ -313,6 +313,10 @@ body {
 
 /* ALGO CARD */
 .algo-card {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
   background: #13131f;
   border: 0;
   border-radius: inherit;
@@ -332,6 +336,11 @@ body {
 
 .algo-card:hover {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.algo-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
 }
 
 .card-glow {
@@ -470,4 +479,5 @@ body {
     font-size: 12px;
     line-height: 1.45;
   }
+
 }

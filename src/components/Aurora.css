@@ -1,0 +1,50 @@
+.aurora-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: drift 8s ease-in-out infinite alternate;
+}
+
+.a1 {
+  width: 600px;
+  height: 300px;
+  background: #7c3aed;
+  top: -80px;
+  left: -100px;
+  animation-duration: 9s;
+}
+
+.a2 {
+  width: 500px;
+  height: 250px;
+  background: #f472b6;
+  top: -60px;
+  left: 30%;
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.a3 {
+  width: 400px;
+  height: 220px;
+  background: #38bdf8;
+  top: -40px;
+  right: -80px;
+  animation-duration: 13s;
+  animation-delay: -6s;
+}
+
+@keyframes drift {
+  0%   { transform: translateY(0px)   scaleX(1); }
+  50%  { transform: translateY(40px)  scaleX(1.08); }
+  100% { transform: translateY(-20px) scaleX(0.95); }
+}

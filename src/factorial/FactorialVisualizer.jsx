@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import "./FactorialVisualizer.css"
 import { AnimatePresence, motion } from "framer-motion"
 import {
   DEFAULT_FACTORIAL_N,

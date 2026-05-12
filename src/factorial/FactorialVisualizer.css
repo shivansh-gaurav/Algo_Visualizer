@@ -1,0 +1,173 @@
+.factorial-page {
+  min-height: 100vh;
+  padding: 3rem 1.25rem 5rem;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(250, 204, 21, 0.14), transparent 28rem),
+    radial-gradient(circle at 84% 16%, rgba(244, 114, 182, 0.12), transparent 24rem),
+    radial-gradient(circle at 50% 92%, rgba(56, 189, 248, 0.1), transparent 30rem),
+    #0a0a12;
+}
+
+.factorial-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.factorial-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.factorial-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #fff 24%, #facc15 58%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.factorial-header p:not(.section-label) {
+  max-width: 640px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.65;
+}
+
+.factorial-back,
+.factorial-controls button,
+.factorial-field input,
+.factorial-field select {
+  font: inherit;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+}
+
+.factorial-back,
+.factorial-controls button {
+  min-height: 42px;
+  padding: 0 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.factorial-back:hover,
+.factorial-controls button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(250,204,21,0.5);
+  background: rgba(250,204,21,0.11);
+}
+
+.factorial-controls button:disabled {
+  cursor: not-allowed;
+  color: rgba(255,255,255,0.25);
+}
+
+.factorial-primary {
+  color: #0a0a12 !important;
+  border-color: #facc15 !important;
+  background: #facc15 !important;
+  font-weight: 700;
+}
+
+.factorial-controls {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  background: rgba(19,19,31,0.72);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.24);
+  backdrop-filter: blur(16px);
+}
+
+.factorial-field {
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(255,255,255,0.42);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.factorial-field input,
+.factorial-field select {
+  min-height: 42px;
+  border-radius: 10px;
+  padding: 0 0.8rem;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.factorial-field input { width: 76px }
+.factorial-field select { width: 146px; appearance: none; cursor: pointer; padding-right: 2.25rem }
+
+.factorial-field select {
+  background:
+    linear-gradient(45deg, transparent 50%, #facc15 50%) calc(100% - 18px) 18px / 6px 6px no-repeat,
+    linear-gradient(135deg, #facc15 50%, transparent 50%) calc(100% - 12px) 18px / 6px 6px no-repeat,
+    linear-gradient(145deg, rgba(250,204,21,0.12), rgba(244,114,182,0.06)),
+    #151522;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.factorial-field input:hover,
+.factorial-field select:hover { border-color: rgba(250,204,21,0.42); background-color: #181827 }
+.factorial-field input:focus,
+.factorial-field select:focus { border-color: rgba(250,204,21,0.72); box-shadow: 0 0 0 3px rgba(250,204,21,0.12), inset 0 0 0 1px rgba(255,255,255,0.04) }
+.factorial-field select option { color: #fff; background: #151522 }
+
+.factorial-stage { display: grid; grid-template-columns: minmax(320px, 1.08fr) minmax(300px, 0.92fr); gap: 1rem }
+.factorial-side { display: grid; gap: 1rem }
+
+.factorial-panel { position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); border-radius: 18px; background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025)), #13131f; box-shadow: 0 18px 60px rgba(0,0,0,0.28) }
+.factorial-panel::before { content: ""; position: absolute; inset: -30% auto auto -18%; width: 220px; height: 220px; border-radius: 50%; background: #facc15; opacity: 0.08; filter: blur(45px); pointer-events: none }
+
+.factorial-panel-head { position: relative; z-index: 1; display:flex; justify-content:space-between; gap:1rem; padding:1rem 1rem 0; color: rgba(255,255,255,0.45); font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase }
+.factorial-panel-head strong { color: #facc15; font-weight:700 }
+
+.stack-panel { min-height: 520px }
+.stack-track { position: relative; z-index: 1; display:flex; flex-direction:column; gap:0.65rem; min-height:460px; padding:1rem }
+.stack-frame { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:54px; padding:0.85rem 1rem; border:1px solid rgba(255,255,255,0.11); border-radius:14px; background: rgba(255,255,255,0.055); color: rgba(255,255,255,0.72); box-shadow: inset 0 0 0 1px transparent }
+.stack-frame span, .factorial-expression, .code-trace { font-family: 'Space Grotesk', monospace }
+.stack-frame em { color: rgba(255,255,255,0.35); font-size:12px; font-style:normal }
+.stack-frame.active { border-color: rgba(250,204,21,0.68); background: linear-gradient(135deg, rgba(250,204,21,0.18), rgba(244,114,182,0.08)), rgba(255,255,255,0.07); color: #fff; box-shadow: inset 0 0 0 1px rgba(250,204,21,0.18), 0 0 28px rgba(250,204,21,0.12) }
+.stack-frame.active em { color: #facc15 }
+
+.stack-empty { display:grid; place-items:center; min-height:420px; border:1px dashed rgba(250,204,21,0.25); border-radius:16px; color: rgba(255,255,255,0.36); font-weight:700 }
+
+.code-trace { position: relative; z-index:1; display:grid; gap:0.45rem; padding:1rem; color: rgba(255,255,255,0.46); font-size:14px; line-height:1.55; white-space: pre-wrap }
+.code-trace code { display:block; padding:0.55rem 0.7rem; border-radius:10px }
+.code-trace code.active { color:#fff; background: rgba(250,204,21,0.12); box-shadow: inset 3px 0 0 #facc15 }
+
+.result-panel { min-height:220px; padding-bottom:1rem }
+.result-panel p { position: relative; z-index:1; padding:1rem 1rem 0; color: rgba(255,255,255,0.58); line-height:1.65 }
+
+.factorial-expression { position: relative; z-index:1; margin:1rem; padding:1rem; border:1px solid rgba(250,204,21,0.24); border-radius:14px; background: rgba(250,204,21,0.09); color: #facc15; font-size: clamp(1rem, 2vw, 1.35rem); font-weight:700 }
+
+@media (max-width: 819px) {
+  .factorial-header,
+  .factorial-stage { grid-template-columns: 1fr }
+  .factorial-back { width: max-content }
+  .stack-panel { min-height: auto }
+  .stack-track { min-height: 360px }
+}
+
+@media (max-width: 559px) {
+  .factorial-page { padding-inline: 0.9rem }
+  .factorial-header h1 { font-size: 2rem }
+  .factorial-controls { align-items: stretch }
+  .factorial-controls button, .factorial-field, .factorial-field input, .factorial-field select { width: 100% }
+  .stack-track { min-height: 310px }
+  .stack-frame { align-items: flex-start; flex-direction: column; gap: 0.35rem }
+}

@@ -9,6 +9,7 @@ import HeapSortVisualizer from "./Heap Sort/HeapSortVisualizer"
 import FibonacciVisualizer from "./fib/FibonacciVisualizer"
 import InsertionSortVisualizer from "./insertion_sort/InsertionSortVisualizer"
 import SelectionSortVisualizer from "./selection_sort/SelectionSortVisualizer"
+import FactorialVisualizer from "./factorial/FactorialVisualizer"
 import { algorithms, filters } from "./data/algorithms"
 
 function App() {
@@ -79,6 +80,14 @@ if (selectedAlgo?.id === "insertion") {
     />
   )
 }
+if (selectedAlgo?.id === "factorial") {
+  return (
+    <FactorialVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
 
   return (
     <div className="page">
@@ -109,7 +118,8 @@ if (selectedAlgo?.id === "insertion") {
             algo.id === "heap" ||
             algo.id === "fibonacci" ||
             algo.id === "selection" ||
-            algo.id === "insertion"
+            algo.id === "insertion" ||
+            algo.id === "factorial"
           ) {
             setSelectedAlgo(algo)
           }

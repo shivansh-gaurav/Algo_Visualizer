@@ -10,6 +10,7 @@ import FibonacciVisualizer from "./fib/FibonacciVisualizer"
 import InsertionSortVisualizer from "./insertion_sort/InsertionSortVisualizer"
 import SelectionSortVisualizer from "./selection_sort/SelectionSortVisualizer"
 import FactorialVisualizer from "./factorial/FactorialVisualizer"
+import BacktrackingVisualizer from "./Backtracking/BacktrackingVisualizer"
 import { algorithms, filters } from "./data/algorithms"
 
 function App() {
@@ -89,6 +90,15 @@ if (selectedAlgo?.id === "factorial") {
   )
 }
 
+if (selectedAlgo?.id === "backtracking") {
+  return (
+    <BacktrackingVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
+
   return (
     <div className="page">
       <Hero />
@@ -119,7 +129,8 @@ if (selectedAlgo?.id === "factorial") {
             algo.id === "fibonacci" ||
             algo.id === "selection" ||
             algo.id === "insertion" ||
-            algo.id === "factorial"
+            algo.id === "factorial" ||
+            algo.id === "backtracking"
           ) {
             setSelectedAlgo(algo)
           }

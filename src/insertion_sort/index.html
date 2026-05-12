@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Insertion Sort Visualizer</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap");
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #080912;
+        --panel: #121421;
+        --text: #f8fafc;
+        --muted: rgba(248, 250, 252, 0.62);
+        --soft: rgba(248, 250, 252, 0.1);
+        --violet: #c084fc;
+        --cyan: #22d3ee;
+        --green: #4ade80;
+        --pink: #f472b6;
+        --amber: #fbbf24;
+        --red: #fb7185;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 16% 10%, rgba(192, 132, 252, 0.2), transparent 30rem),
+          radial-gradient(circle at 86% 18%, rgba(34, 211, 238, 0.15), transparent 28rem),
+          linear-gradient(135deg, #080912 0%, #161225 58%, #0c1718 100%);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .back-link {
+        color: rgba(248, 250, 252, 0.76);
+        text-decoration: none;
+        border: 1px solid var(--soft);
+        border-radius: 8px;
+        padding: 9px 12px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .title h1 {
+        font-family: "Syne", system-ui, sans-serif;
+        font-size: clamp(2rem, 5vw, 4.4rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .title p {
+        max-width: 700px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-top: 14px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(330px, 0.75fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .panel {
+        background: rgba(18, 20, 33, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 8px;
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+      }
+
+      .visual-panel {
+        min-height: 620px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stat {
+        padding: 18px;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stat:last-child {
+        border-right: 0;
+      }
+
+      .stat span {
+        display: block;
+        color: rgba(248, 250, 252, 0.45);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 5px;
+      }
+
+      .stat strong {
+        font-size: 1.25rem;
+      }
+
+      .stage {
+        position: relative;
+        min-height: 360px;
+        padding: 30px 18px 22px;
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        gap: clamp(8px, 1.5vw, 16px);
+      }
+
+      .bar-wrap {
+        width: min(54px, 10vw);
+        height: 100%;
+        min-width: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .bar {
+        width: 100%;
+        min-height: 28px;
+        border-radius: 7px 7px 4px 4px;
+        background: linear-gradient(180deg, #a78bfa, #7c3aed);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+        transition:
+          height 300ms ease,
+          background 220ms ease,
+          transform 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .bar-label {
+        color: rgba(248, 250, 252, 0.76);
+        font-weight: 700;
+      }
+
+      .bar-wrap.sorted .bar {
+        background: linear-gradient(180deg, var(--green), #16a34a);
+      }
+
+      .bar-wrap.key .bar {
+        background: linear-gradient(180deg, var(--amber), #d97706);
+        transform: translateY(-16px) scale(1.04);
+        box-shadow: 0 14px 32px rgba(251, 191, 36, 0.28);
+      }
+
+      .bar-wrap.compare .bar {
+        background: linear-gradient(180deg, var(--pink), #db2777);
+        transform: translateY(-10px);
+      }
+
+      .bar-wrap.shift .bar {
+        background: linear-gradient(180deg, var(--red), #e11d48);
+        transform: translateY(-18px);
+      }
+
+      .bar-wrap.insert .bar {
+        background: linear-gradient(180deg, var(--cyan), #0891b2);
+        transform: translateY(-14px);
+        box-shadow: 0 14px 32px rgba(34, 211, 238, 0.26);
+      }
+
+      .legend {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 18px 18px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: rgba(248, 250, 252, 0.68);
+        font-size: 0.86rem;
+      }
+
+      .key-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      .controls {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .control-buttons {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border-radius: 8px;
+        min-height: 42px;
+        padding: 0 15px;
+        cursor: pointer;
+        transition:
+          transform 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.32);
+      }
+
+      .btn.primary {
+        background: var(--violet);
+        color: #080912;
+        border-color: transparent;
+        font-weight: 700;
+      }
+
+      .speed {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .speed input {
+        accent-color: var(--violet);
+        width: 130px;
+      }
+
+      .side-panel {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+      }
+
+      .step-card {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .step-card span {
+        color: var(--violet);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .step-card h2 {
+        margin-top: 8px;
+        font-size: 1.35rem;
+      }
+
+      .step-card p {
+        margin-top: 10px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .code {
+        padding: 16px 0;
+        overflow: auto;
+        background: rgba(5, 7, 18, 0.52);
+      }
+
+      .code-line {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 12px;
+        padding: 8px 18px 8px 0;
+        color: rgba(248, 250, 252, 0.58);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        border-left: 4px solid transparent;
+        white-space: pre;
+      }
+
+      .line-no {
+        text-align: right;
+        color: rgba(248, 250, 252, 0.32);
+        user-select: none;
+      }
+
+      .code-line.active {
+        background: rgba(192, 132, 252, 0.16);
+        border-left-color: var(--violet);
+        color: #ffffff;
+      }
+
+      .code-line.done {
+        color: rgba(74, 222, 128, 0.72);
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .visual-panel {
+          min-height: 560px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          width: min(100% - 20px, 1180px);
+          padding: 18px 0;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .controls {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat:nth-child(2) {
+          border-right: 0;
+        }
+
+        .stat:nth-child(-n + 2) {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stage {
+          gap: 7px;
+          padding-inline: 10px;
+        }
+
+        .bar-wrap {
+          min-width: 24px;
+        }
+
+        .bar-label {
+          font-size: 0.82rem;
+        }
+
+        .speed {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="title">
+          <h1>Insertion Sort Visualizer</h1>
+          <p>
+            Watch the algorithm take one key value at a time, shift larger
+            sorted values to the right, and insert the key into its correct spot.
+          </p>
+        </div>
+        <a class="back-link" href="../../index.html">Back</a>
+      </header>
+
+      <section class="layout" aria-label="Insertion sort visualizer">
+        <div class="panel visual-panel">
+          <div class="stats">
+            <div class="stat">
+              <span>Pass</span>
+              <strong id="passValue">0 / 7</strong>
+            </div>
+            <div class="stat">
+              <span>Comparisons</span>
+              <strong id="compareValue">0</strong>
+            </div>
+            <div class="stat">
+              <span>Shifts</span>
+              <strong id="shiftValue">0</strong>
+            </div>
+            <div class="stat">
+              <span>Key</span>
+              <strong id="keyValue">-</strong>
+            </div>
+          </div>
+
+          <div class="stage" id="stage" aria-live="polite"></div>
+
+          <div class="legend" aria-label="Color key">
+            <span class="legend-item"><span class="key-dot" style="background:#4ade80"></span>sorted part</span>
+            <span class="legend-item"><span class="key-dot" style="background:#fbbf24"></span>key</span>
+            <span class="legend-item"><span class="key-dot" style="background:#f472b6"></span>comparing</span>
+            <span class="legend-item"><span class="key-dot" style="background:#fb7185"></span>shift right</span>
+            <span class="legend-item"><span class="key-dot" style="background:#22d3ee"></span>insert</span>
+          </div>
+
+          <div class="controls">
+            <div class="control-buttons">
+              <button class="btn primary" id="playBtn" type="button">Play</button>
+              <button class="btn" id="stepBtn" type="button">Next Step</button>
+              <button class="btn" id="resetBtn" type="button">Reset</button>
+              <button class="btn" id="randomBtn" type="button">New Array</button>
+            </div>
+            <label class="speed">
+              Speed
+              <input id="speedInput" type="range" min="180" max="1300" step="40" value="700" />
+            </label>
+          </div>
+        </div>
+
+        <aside class="panel side-panel">
+          <div class="step-card">
+            <span id="stepLabel">Ready</span>
+            <h2 id="stepTitle">Start the animation</h2>
+            <p id="stepText">Press Play or Next Step to see each insertion sort line run beside the changing bars.</p>
+          </div>
+
+          <div class="code" id="codePanel" aria-label="Insertion sort code"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const codeLines = [
+        "for i = 1 to n - 1",
+        "  key = array[i]",
+        "  j = i - 1",
+        "  while j >= 0 and array[j] > key",
+        "    array[j + 1] = array[j]",
+        "    j = j - 1",
+        "  array[j + 1] = key",
+        "  mark array[0..i] as sorted",
+      ];
+
+      const initialArray = [54, 28, 76, 19, 63, 41, 85, 36];
+      let values = [...initialArray];
+      let steps = [];
+      let currentStep = 0;
+      let timer = null;
+      let isPlaying = false;
+
+      const stage = document.querySelector("#stage");
+      const codePanel = document.querySelector("#codePanel");
+      const playBtn = document.querySelector("#playBtn");
+      const stepBtn = document.querySelector("#stepBtn");
+      const resetBtn = document.querySelector("#resetBtn");
+      const randomBtn = document.querySelector("#randomBtn");
+      const speedInput = document.querySelector("#speedInput");
+
+      const passValue = document.querySelector("#passValue");
+      const compareValue = document.querySelector("#compareValue");
+      const shiftValue = document.querySelector("#shiftValue");
+      const keyValue = document.querySelector("#keyValue");
+      const stepLabel = document.querySelector("#stepLabel");
+      const stepTitle = document.querySelector("#stepTitle");
+      const stepText = document.querySelector("#stepText");
+
+      function createStep(config) {
+        return {
+          array: [...config.array],
+          activeLine: config.activeLine,
+          i: config.i ?? null,
+          j: config.j ?? null,
+          keyIndex: config.keyIndex ?? null,
+          keyValue: config.keyValue ?? null,
+          sortedUntil: config.sortedUntil ?? 0,
+          compareCount: config.compareCount ?? 0,
+          shiftCount: config.shiftCount ?? 0,
+          shift: config.shift ?? [],
+          insertIndex: config.insertIndex ?? null,
+          label: config.label,
+          title: config.title,
+          text: config.text,
+        };
+      }
+
+      function buildSteps(source) {
+        const arr = [...source];
+        const output = [];
+        let compareCount = 0;
+        let shiftCount = 0;
+
+        output.push(createStep({
+          array: arr,
+          activeLine: 1,
+          sortedUntil: 0,
+          label: "Ready",
+          title: "Begin insertion sort",
+          text: "Index 0 is already a sorted one-item section. Each next value will be inserted into that section.",
+        }));
+
+        for (let i = 1; i < arr.length; i += 1) {
+          output.push(createStep({
+            array: arr,
+            activeLine: 1,
+            i,
+            sortedUntil: i - 1,
+            compareCount,
+            shiftCount,
+            label: `Pass ${i}`,
+            title: `Insert index ${i}`,
+            text: `Take ${arr[i]} and place it into the sorted section on the left.`,
+          }));
+
+          const key = arr[i];
+          output.push(createStep({
+            array: arr,
+            activeLine: 2,
+            i,
+            keyIndex: i,
+            keyValue: key,
+            sortedUntil: i - 1,
+            compareCount,
+            shiftCount,
+            label: `Pass ${i}`,
+            title: `Key is ${key}`,
+            text: `Store ${key} so larger values can shift right without losing it.`,
+          }));
+
+          let j = i - 1;
+          output.push(createStep({
+            array: arr,
+            activeLine: 3,
+            i,
+            j,
+            keyIndex: i,
+            keyValue: key,
+            sortedUntil: i - 1,
+            compareCount,
+            shiftCount,
+            label: `Pass ${i}`,
+            title: `Start checking at index ${j}`,
+            text: `Compare the key with values in the sorted section, moving from right to left.`,
+          }));
+
+          while (j >= 0) {
+            compareCount += 1;
+            output.push(createStep({
+              array: arr,
+              activeLine: 4,
+              i,
+              j,
+              keyIndex: i,
+              keyValue: key,
+              sortedUntil: i - 1,
+              compareCount,
+              shiftCount,
+              label: `Comparison ${compareCount}`,
+              title: `${arr[j]} > ${key}?`,
+              text: arr[j] > key
+                ? "Yes. Shift this larger value one position to the right."
+                : "No. The correct insertion point is just after this value.",
+            }));
+
+            if (arr[j] <= key) break;
+
+            arr[j + 1] = arr[j];
+            shiftCount += 1;
+            output.push(createStep({
+              array: arr,
+              activeLine: 5,
+              i,
+              j,
+              keyValue: key,
+              sortedUntil: i - 1,
+              compareCount,
+              shiftCount,
+              shift: [j, j + 1],
+              label: `Shift ${shiftCount}`,
+              title: `Move ${arr[j]} right`,
+              text: `Index ${j + 1} now holds ${arr[j]}, making room for the key.`,
+            }));
+
+            j -= 1;
+            output.push(createStep({
+              array: arr,
+              activeLine: 6,
+              i,
+              j,
+              keyValue: key,
+              sortedUntil: i - 1,
+              compareCount,
+              shiftCount,
+              label: `Pass ${i}`,
+              title: `Move j to ${j}`,
+              text: j >= 0
+                ? `Keep scanning left from index ${j}.`
+                : "j moved before the array, so the key belongs at index 0.",
+            }));
+          }
+
+          arr[j + 1] = key;
+          output.push(createStep({
+            array: arr,
+            activeLine: 7,
+            i,
+            j,
+            keyValue: key,
+            sortedUntil: i - 1,
+            compareCount,
+            shiftCount,
+            insertIndex: j + 1,
+            label: `Insert`,
+            title: `Place ${key} at index ${j + 1}`,
+            text: `The key is inserted after all larger values have shifted right.`,
+          }));
+
+          output.push(createStep({
+            array: arr,
+            activeLine: 8,
+            i,
+            keyValue: key,
+            sortedUntil: i,
+            compareCount,
+            shiftCount,
+            label: `Sorted through ${i}`,
+            title: `Indexes 0 through ${i} are sorted`,
+            text: `The sorted section grew by one value.`,
+          }));
+        }
+
+        output.push(createStep({
+          array: arr,
+          activeLine: 8,
+          sortedUntil: arr.length - 1,
+          compareCount,
+          shiftCount,
+          label: "Complete",
+          title: "Array sorted",
+          text: "Every value has been inserted into its correct position.",
+        }));
+
+        return output;
+      }
+
+      function renderCode(activeLine, doneLine) {
+        codePanel.innerHTML = codeLines
+          .map((line, index) => {
+            const lineNumber = index + 1;
+            const active = lineNumber === activeLine ? " active" : "";
+            const done = lineNumber < doneLine ? " done" : "";
+            return `<div class="code-line${active}${done}">
+              <span class="line-no">${lineNumber}</span><span>${line}</span>
+            </div>`;
+          })
+          .join("");
+      }
+
+      function renderBars(step) {
+        const maxValue = Math.max(...step.array);
+        stage.innerHTML = step.array
+          .map((value, index) => {
+            const classes = ["bar-wrap"];
+
+            if (index <= step.sortedUntil) classes.push("sorted");
+            if (index === step.keyIndex) classes.push("key");
+            if (index === step.j) classes.push("compare");
+            if (step.shift.includes(index)) classes.push("shift");
+            if (index === step.insertIndex) classes.push("insert");
+
+            return `
+              <div class="${classes.join(" ")}" aria-label="Value ${value}">
+                <div class="bar" style="height:${Math.max(20, (value / maxValue) * 310)}px"></div>
+                <div class="bar-label">${value}</div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function render() {
+        const step = steps[currentStep];
+        const passTotal = values.length - 1;
+        const pass = Math.min(passTotal, Math.max(0, step.i ?? step.sortedUntil));
+
+        renderBars(step);
+        renderCode(step.activeLine, step.activeLine);
+
+        passValue.textContent = `${pass} / ${passTotal}`;
+        compareValue.textContent = step.compareCount;
+        shiftValue.textContent = step.shiftCount;
+        keyValue.textContent = step.keyValue === null ? "-" : step.keyValue;
+        stepLabel.textContent = step.label;
+        stepTitle.textContent = step.title;
+        stepText.textContent = step.text;
+
+        stepBtn.disabled = currentStep >= steps.length - 1;
+        playBtn.textContent = isPlaying ? "Pause" : "Play";
+      }
+
+      function goNext() {
+        if (currentStep < steps.length - 1) {
+          currentStep += 1;
+          render();
+          return;
+        }
+
+        stopPlaying();
+        render();
+      }
+
+      function startPlaying() {
+        isPlaying = true;
+        render();
+        timer = window.setInterval(goNext, Number(speedInput.value));
+      }
+
+      function stopPlaying() {
+        isPlaying = false;
+        window.clearInterval(timer);
+        timer = null;
+      }
+
+      function restart(newValues) {
+        stopPlaying();
+        values = [...newValues];
+        steps = buildSteps(values);
+        currentStep = 0;
+        render();
+      }
+
+      function randomArray() {
+        const next = Array.from({ length: 8 }, () => Math.floor(Math.random() * 75) + 15);
+        restart(next);
+      }
+
+      playBtn.addEventListener("click", () => {
+        if (isPlaying) {
+          stopPlaying();
+          render();
+        } else {
+          if (currentStep >= steps.length - 1) currentStep = 0;
+          startPlaying();
+        }
+      });
+
+      stepBtn.addEventListener("click", () => {
+        stopPlaying();
+        goNext();
+      });
+
+      resetBtn.addEventListener("click", () => restart(values));
+      randomBtn.addEventListener("click", randomArray);
+      speedInput.addEventListener("input", () => {
+        if (!isPlaying) return;
+        stopPlaying();
+        startPlaying();
+      });
+
+      restart(values);
+    </script>
+  </body>
+</html>

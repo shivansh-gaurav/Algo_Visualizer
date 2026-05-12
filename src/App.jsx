@@ -6,6 +6,9 @@ import BubbleSortVisualizer from "./Bubble Sort/BubbleSortVisualizer"
 import TowerOfHanoiVisualizer from "./Tower of Hanoi/TowerOfHanoiVisualizer"
 import BinarySearchVisualizer from "./Binary Search/BinarySearchVisualizer"
 import HeapSortVisualizer from "./Heap Sort/HeapSortVisualizer"
+import FibonacciVisualizer from "./fib/FibonacciVisualizer"
+import InsertionSortVisualizer from "./insertion_sort/InsertionSortVisualizer"
+import SelectionSortVisualizer from "./selection_sort/SelectionSortVisualizer"
 import { algorithms, filters } from "./data/algorithms"
 
 function App() {
@@ -52,6 +55,30 @@ function App() {
       />
     )
   }
+  if (selectedAlgo?.id === "fibonacci") {
+    return (
+      <FibonacciVisualizer
+        algo={selectedAlgo}
+        onBack={() => setSelectedAlgo(null)}
+      />
+  )
+}
+if (selectedAlgo?.id === "selection") {
+  return (
+    <SelectionSortVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
+if (selectedAlgo?.id === "insertion") {
+  return (
+    <InsertionSortVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
 
   return (
     <div className="page">
@@ -79,7 +106,10 @@ function App() {
             algo.id === "bubble" ||
             algo.id === "towerofhanoi" ||
             algo.id === "binarysearch" ||
-            algo.id === "heap"
+            algo.id === "heap" ||
+            algo.id === "fibonacci" ||
+            algo.id === "selection" ||
+            algo.id === "insertion"
           ) {
             setSelectedAlgo(algo)
           }

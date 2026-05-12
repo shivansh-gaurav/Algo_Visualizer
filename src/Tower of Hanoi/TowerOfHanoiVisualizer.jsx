@@ -5,19 +5,65 @@ const PEGS = ["A", "B", "C"]
 const MIN_DISKS = 3
 const MAX_DISKS = 6
 
+const PSEUDOCODE_LINES = [
+  "hanoi(n, source, target, helper)",
+  "  if n == 0: return",
+  "  hanoi(n - 1, source, helper, target)",
+  "  move disk n from source to target",
+  "  hanoi(n - 1, helper, target, source)",
+]
+
 const makeStartingPegs = (diskCount) => ({
   A: Array.from({ length: diskCount }, (_, index) => diskCount - index),
   B: [],
   C: [],
 })
 
-const buildMoves = (diskCount, from = "A", to = "C", helper = "B") => {
-  if (diskCount === 0) return []
+const buildMoves = (diskCount, from = "A", to = "C", helper = "B", depth = 0) => {
+  if (diskCount === 0) {
+    return [
+      {
+        disk: null,
+        from,
+        to,
+        helper,
+        depth,
+        pseudocodeLine: 1,
+        type: "base",
+      },
+    ]
+  }
 
   return [
-    ...buildMoves(diskCount - 1, from, helper, to),
-    { disk: diskCount, from, to },
-    ...buildMoves(diskCount - 1, helper, to, from),
+    {
+      disk: diskCount,
+      from,
+      to,
+      helper,
+      depth,
+      pseudocodeLine: 2,
+      type: "recurse-left",
+    },
+    ...buildMoves(diskCount - 1, from, helper, to, depth + 1),
+    {
+      disk: diskCount,
+      from,
+      to,
+      helper,
+      depth,
+      pseudocodeLine: 3,
+      type: "move",
+    },
+    {
+      disk: diskCount,
+      from: helper,
+      to,
+      helper: from,
+      depth,
+      pseudocodeLine: 4,
+      type: "recurse-right",
+    },
+    ...buildMoves(diskCount - 1, helper, to, from, depth + 1),
   ]
 }
 
@@ -26,6 +72,8 @@ const applyMoves = (diskCount, moves, stepIndex) => {
 
   for (let index = 0; index < stepIndex; index += 1) {
     const move = moves[index]
+    if (move.type !== "move") continue
+
     const disk = pegs[move.from].pop()
     pegs[move.to].push(disk)
   }
@@ -44,7 +92,10 @@ function TowerOfHanoiVisualizer({ algo, onBack }) {
     [diskCount, moves, stepIndex],
   )
   const currentMove = moves[stepIndex]
-  const previousMove = moves[stepIndex - 1]
+  const previousMove = [...moves]
+    .slice(0, stepIndex)
+    .reverse()
+    .find((move) => move.type === "move")
   const progress = Math.round((stepIndex / moves.length) * 100)
 
   useEffect(() => {
@@ -70,8 +121,12 @@ function TowerOfHanoiVisualizer({ algo, onBack }) {
     setStepIndex(0)
   }
 
-  const statusText = currentMove
+  const statusText = currentMove?.type === "move"
     ? `Move disk ${currentMove.disk} from ${currentMove.from} to ${currentMove.to}.`
+    : currentMove?.type === "base"
+      ? "Base case reached: no disk to move, so return."
+      : currentMove
+        ? `Recursive call at depth ${currentMove.depth}: hanoi(${currentMove.disk - 1}, ${currentMove.from}, ${currentMove.type === "recurse-left" ? currentMove.helper : currentMove.to}, ${currentMove.type === "recurse-left" ? currentMove.to : currentMove.helper}).`
     : "Solved. Every disk is stacked on peg C."
 
   return (
@@ -96,31 +151,49 @@ function TowerOfHanoiVisualizer({ algo, onBack }) {
         </div>
 
         <div className="hanoi-stage" aria-label="Tower of Hanoi visualization">
-          <div className="hanoi-board">
-            {PEGS.map((peg) => (
-              <div className="hanoi-peg" key={peg}>
-                <div className="hanoi-rod" />
-                <div className="hanoi-stack">
-                  {pegs[peg].map((disk) => {
-                    const isMoving = previousMove?.disk === disk
-                    return (
-                      <div
-                        className={`hanoi-disk ${isMoving ? "just-moved" : ""}`}
-                        key={disk}
-                        style={{
-                          "--disk-size": disk,
-                          "--disk-total": diskCount,
-                        }}
-                      >
-                        {disk}
-                      </div>
-                    )
-                  })}
+          <div className="hanoi-workspace">
+            <div className="hanoi-board">
+              {PEGS.map((peg) => (
+                <div className="hanoi-peg" key={peg}>
+                  <div className="hanoi-rod" />
+                  <div className="hanoi-stack">
+                    {pegs[peg].map((disk) => {
+                      const isMoving = previousMove?.disk === disk
+                      return (
+                        <div
+                          className={`hanoi-disk ${isMoving ? "just-moved" : ""}`}
+                          key={disk}
+                          style={{
+                            "--disk-size": disk,
+                            "--disk-total": diskCount,
+                          }}
+                        >
+                          {disk}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="hanoi-base" />
+                  <span className="hanoi-label">Peg {peg}</span>
                 </div>
-                <div className="hanoi-base" />
-                <span className="hanoi-label">Peg {peg}</span>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <aside className="hanoi-pseudocode-panel" aria-label="Tower of Hanoi pseudocode">
+              <span className="hanoi-pseudocode-title">Pseudocode</span>
+              <ol>
+                {PSEUDOCODE_LINES.map((line, index) => (
+                  <li
+                    className={
+                      currentMove?.pseudocodeLine === index ? "active" : ""
+                    }
+                    key={line}
+                  >
+                    <code>{line}</code>
+                  </li>
+                ))}
+              </ol>
+            </aside>
           </div>
 
           <div className="hanoi-step-panel">

@@ -2,9 +2,46 @@ import { useEffect, useMemo, useState } from "react"
 import "./BubbleSortVisualizer.css"
 
 const START_VALUES = [42, 18, 68, 31, 55, 12, 76, 24]
+const MIN_INPUT_COUNT = 2
+const MAX_INPUT_COUNT = 12
+const MIN_INPUT_VALUE = 1
+const MAX_INPUT_VALUE = 100
 
 const makeRandomValues = () =>
   Array.from({ length: 8 }, () => Math.floor(Math.random() * 65) + 12)
+
+const formatValues = (items) => items.join(", ")
+
+const parseManualValues = (input) => {
+  const values = input
+    .split(/[\s,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (values.length < MIN_INPUT_COUNT || values.length > MAX_INPUT_COUNT) {
+    return {
+      error: `Enter ${MIN_INPUT_COUNT}-${MAX_INPUT_COUNT} numbers.`,
+      values: [],
+    }
+  }
+
+  const parsed = values.map(Number)
+  const hasInvalidValue = parsed.some(
+    (value) =>
+      !Number.isInteger(value) ||
+      value < MIN_INPUT_VALUE ||
+      value > MAX_INPUT_VALUE,
+  )
+
+  if (hasInvalidValue) {
+    return {
+      error: `Use whole numbers from ${MIN_INPUT_VALUE} to ${MAX_INPUT_VALUE}.`,
+      values: [],
+    }
+  }
+
+  return { error: "", values: parsed }
+}
 
 const PSEUDOCODE_LINES = [
   "for end = n - 1 down to 1",
@@ -124,6 +161,8 @@ const buildBubbleSortSteps = (values) => {
 
 function BubbleSortVisualizer({ algo, onBack }) {
   const [values, setValues] = useState(START_VALUES)
+  const [manualInput, setManualInput] = useState(formatValues(START_VALUES))
+  const [inputError, setInputError] = useState("")
   const [stepIndex, setStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
 
@@ -151,7 +190,22 @@ function BubbleSortVisualizer({ algo, onBack }) {
   const resetRun = (nextValues = values) => {
     setIsPlaying(false)
     setValues(nextValues)
+    setManualInput(formatValues(nextValues))
+    setInputError("")
     setStepIndex(0)
+  }
+
+  const applyManualValues = (event) => {
+    event.preventDefault()
+
+    const result = parseManualValues(manualInput)
+
+    if (result.error) {
+      setInputError(result.error)
+      return
+    }
+
+    resetRun(result.values)
   }
 
   return (
@@ -177,7 +231,10 @@ function BubbleSortVisualizer({ algo, onBack }) {
 
         <div className="sort-stage" aria-label="Bubble sort visualization">
           <div className="sort-workspace">
-            <div className="bars">
+            <div
+              className="bars"
+              style={{ "--item-count": currentStep.values.length }}
+            >
               {currentStep.values.map((value, index) => {
                 const isComparing = currentStep.comparing.includes(index)
                 const isSorted = index >= currentStep.sortedFrom
@@ -258,6 +315,26 @@ function BubbleSortVisualizer({ algo, onBack }) {
         <button type="button" onClick={() => resetRun(makeRandomValues())}>
           Shuffle
         </button>
+        <form className="manual-array-form" onSubmit={applyManualValues}>
+          <label htmlFor="manual-array">Custom array</label>
+          <input
+            id="manual-array"
+            type="text"
+            value={manualInput}
+            onChange={(event) => {
+              setManualInput(event.target.value)
+              setInputError("")
+            }}
+            placeholder="42, 18, 68, 31"
+            aria-describedby={inputError ? "manual-array-error" : undefined}
+          />
+          <button type="submit">Apply</button>
+          {inputError && (
+            <span id="manual-array-error" className="manual-array-error">
+              {inputError}
+            </span>
+          )}
+        </form>
       </section>
     </main>
   )

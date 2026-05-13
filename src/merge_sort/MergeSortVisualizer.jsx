@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import "./MergeSortVisualizer.css"
 
 const codeLines = [
-  "mergeSort(array, lo, hi)",
-  "  if lo >= hi: return",
-  "  mid = (lo + hi) // 2",
-  "  mergeSort(array, lo, mid)",
-  "  mergeSort(array, mid + 1, hi)",
-  "  merge(array, lo, mid, hi)",
-  "merge(array, lo, mid, hi)",
+  "iterativeMergeSort(array)",
+  "  width = 1",
+  "  while width < n:",
+  "    for i = 0 to n-1 step 2*width",
+  "      merge array[i..i+width-1] and array[i+width..i+2*width-1]",
+  "    width *= 2",
+  "merge(left, right)",
   "  create left and right buffers",
   "  while left and right: compare and write smaller",
   "  copy remaining items",
@@ -36,6 +36,7 @@ function createStep(config) {
 
 function buildSteps(source) {
   const arr = [...source]
+  const n = arr.length
   const output = []
   let compareCount = 0
   let writeCount = 0
@@ -44,11 +45,11 @@ function buildSteps(source) {
     array: arr,
     activeLine: 1,
     label: "Ready",
-    title: "Begin merge sort",
-    text: "Divide the array and merge sorted halves back together.",
+    title: "Begin iterative merge sort",
+    text: "Start with width = 1 and merge small runs into larger sorted runs.",
   }))
 
-  function mergeRange(lo, mid, hi) {
+  const mergeRange = (lo, mid, hi) => {
     const left = arr.slice(lo, mid + 1)
     const right = arr.slice(mid + 1, hi + 1)
     let l = 0
@@ -93,6 +94,7 @@ function buildSteps(source) {
         arr[w] = right[r]
         r += 1
       }
+
       writeCount += 1
       output.push(createStep({
         array: arr,
@@ -151,7 +153,6 @@ function buildSteps(source) {
       w += 1
     }
 
-    // mark this range as sorted
     output.push(createStep({
       array: arr,
       activeLine: 6,
@@ -164,32 +165,30 @@ function buildSteps(source) {
     }))
   }
 
-  function recurse(lo, hi) {
-    if (lo >= hi) return
-    const mid = Math.floor((lo + hi) / 2)
-    output.push(createStep({
-      array: arr,
-      activeLine: 2,
-      lo,
-      mid,
-      hi,
-      label: `Split ${lo}-${hi}`,
-      title: `Divide ${lo}-${hi}`,
-      text: `Split into ${lo}-${mid} and ${mid + 1}-${hi}`,
-    }))
-    recurse(lo, mid)
-    recurse(mid + 1, hi)
-    mergeRange(lo, mid, hi)
-  }
+  // bottom-up iterative merge: width = 1,2,4,...
+  let width = 1
+  while (width < n) {
+    output.push(createStep({ array: arr, activeLine: 2, label: `Width ${width}`, title: `Merge runs of width ${width}`, text: `Merge adjacent runs of size ${width}.` }))
 
-  recurse(0, arr.length - 1)
+    for (let i = 0; i < n; i += 2 * width) {
+      const lo = i
+      const mid = Math.min(i + width - 1, n - 1)
+      const hi = Math.min(i + 2 * width - 1, n - 1)
+
+      if (mid < hi) {
+        mergeRange(lo, mid, hi)
+      }
+    }
+
+    width *= 2
+  }
 
   output.push(createStep({
     array: arr,
     activeLine: 6,
     label: "Complete",
     title: "Array sorted",
-    text: "The entire array is now sorted by merge sort.",
+    text: "The entire array is now sorted by iterative merge sort.",
   }))
 
   return output

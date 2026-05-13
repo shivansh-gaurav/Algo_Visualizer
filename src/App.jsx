@@ -11,6 +11,8 @@ import InsertionSortVisualizer from "./insertion_sort/InsertionSortVisualizer"
 import SelectionSortVisualizer from "./selection_sort/SelectionSortVisualizer"
 import FactorialVisualizer from "./factorial/FactorialVisualizer"
 import BacktrackingVisualizer from "./Backtracking/BacktrackingVisualizer"
+import MergeSortVisualizer from "./merge_sort/MergeSortVisualizer"  
+import MergeSortRecursionVisualizer from "./merge_sort_recurrsion/MergeSortRecursionVisualizer"
 import { algorithms, filters } from "./data/algorithms"
 
 function App() {
@@ -30,6 +32,7 @@ function App() {
       />
     )
   }
+  
 
   if (selectedAlgo?.id === "towerofhanoi") {
     return (
@@ -98,6 +101,23 @@ if (selectedAlgo?.id === "backtracking") {
     />
   )
 }
+if (selectedAlgo?.id === "merge") {
+    return (
+      <MergeSortVisualizer
+        algo={selectedAlgo}
+        onBack={() => setSelectedAlgo(null)}
+      />
+    )
+  }
+
+if (selectedAlgo?.id === "mergesort-rec") {
+  return (
+    <MergeSortRecursionVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
 
   return (
     <div className="page">
@@ -130,7 +150,9 @@ if (selectedAlgo?.id === "backtracking") {
             algo.id === "selection" ||
             algo.id === "insertion" ||
             algo.id === "factorial" ||
-            algo.id === "backtracking"
+            algo.id === "backtracking" ||
+            algo.id === "merge"
+            || algo.id === "mergesort-rec"
           ) {
             setSelectedAlgo(algo)
           }

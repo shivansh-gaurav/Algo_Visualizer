@@ -77,7 +77,7 @@ export function buildCountingSortSteps(source) {
       activeInput: i,
       activeCount: val,
       message:     `count[${val}] is now ${count[val]}`,
-      hint:        `count[] now shows: ${count.map((c, k) => `${k}→${c}`).filter(([,v]) => true).slice(0, 6).join(", ")}…`,
+      hint:        `count[] now shows: ${count.map((c, k) => `${k}→${c}`).slice(0, 6).join(", ")}…`,
     })
   }
 

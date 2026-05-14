@@ -24,12 +24,15 @@ function BacktrackingVisualizer({ onBack }) {
     return () => clearTimeout(t)
   }, [isPlaying, stepIndex, steps.length, speed])
 
-  // reset when preset changes
-  useEffect(() => { setStepIndex(0); setIsPlaying(false) }, [preset])
-
   const togglePlay = () => {
     if (stepIndex >= steps.length - 1) setStepIndex(0)
     setIsPlaying((p) => !p)
+  }
+
+  const changePreset = (nextPreset) => {
+    setPreset(nextPreset)
+    setStepIndex(0)
+    setIsPlaying(false)
   }
 
   const prev  = () => { setStepIndex((s) => Math.max(s - 1, 0));                setIsPlaying(false) }
@@ -50,7 +53,7 @@ function BacktrackingVisualizer({ onBack }) {
 
         {/* ── Controls ── */}
         <div className="controls">
-          <select value={preset} onChange={(e) => setPreset(e.target.value)}>
+          <select value={preset} onChange={(e) => changePreset(e.target.value)}>
             <option value="easy">Easy preset</option>
           </select>
           <button onClick={prev}  disabled={stepIndex === 0}>◀ Prev</button>

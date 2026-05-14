@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from '../../node_modules/.vite/deps/gsap_ScrollTrigger.js';
-import { SplitText as GSAPSplitText } from '../../node_modules/.vite/deps/gsap_SplitText.js';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText as GSAPSplitText } from 'gsap/SplitText';
 import { useGSAP } from '@gsap/react';
 
-// gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
+gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
 
 const SplitText = ({
   text,

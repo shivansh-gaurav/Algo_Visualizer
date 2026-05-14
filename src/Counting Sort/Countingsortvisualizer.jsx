@@ -23,7 +23,7 @@ function PhasePipeline({ currentPhase }) {
 
   return (
     <div className="csv-pipeline">
-      {phases.map(({ key, label, desc }, i) => {
+      {phases.map(({ key, label, desc }) => {
         const phaseOrder = order.indexOf(key)
         const state = phaseOrder < cur ? "done" : phaseOrder === cur ? "active" : "pending"
         return (
@@ -98,7 +98,7 @@ function ArrayRow({ label, sublabel, children, highlight }) {
 }
 
 // ─── main component ────────────────────────────────────────────────────────────
-function CountingSortVisualizer({ algo, onBack }) {
+function CountingSortVisualizer({ onBack }) {
   const [sampleKey, setSampleKey] = useState("6")
   const [stepIndex, setStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -110,12 +110,26 @@ function CountingSortVisualizer({ algo, onBack }) {
 
   useEffect(() => {
     if (!isPlaying) return undefined
-    if (stepIndex >= steps.length - 1) { setIsPlaying(false); return undefined }
-    const t = setTimeout(() => setStepIndex((s) => s + 1), speed)
+    const t = setTimeout(() => {
+      setStepIndex((s) => {
+        if (s >= steps.length - 1) {
+          setIsPlaying(false)
+          return s
+        }
+
+        const next = s + 1
+        if (next >= steps.length - 1) setIsPlaying(false)
+        return next
+      })
+    }, speed)
     return () => clearTimeout(t)
   }, [isPlaying, stepIndex, steps.length, speed])
 
-  useEffect(() => { setStepIndex(0); setIsPlaying(false) }, [sampleKey])
+  const changeSample = useCallback((nextSample) => {
+    setSampleKey(nextSample)
+    setStepIndex(0)
+    setIsPlaying(false)
+  }, [])
 
   const prev     = useCallback(() => { setStepIndex((s) => Math.max(s - 1, 0)); setIsPlaying(false) }, [])
   const nextStep = useCallback(() => { setStepIndex((s) => Math.min(s + 1, steps.length - 1)); setIsPlaying(false) }, [steps.length])
@@ -280,7 +294,7 @@ function CountingSortVisualizer({ algo, onBack }) {
           <select
             className="csv-select"
             value={sampleKey}
-            onChange={(e) => setSampleKey(e.target.value)}
+            onChange={(e) => changeSample(e.target.value)}
           >
             <option value="6">Sample A (6 elements)</option>
             <option value="8">Sample B (8 elements)</option>

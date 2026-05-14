@@ -12,28 +12,8 @@ const LEVEL_COLORS = [
 ]
 const levelColor = (l) => LEVEL_COLORS[Math.min(l, LEVEL_COLORS.length - 1)]
 
-// ─── build the visual tree from treeNodes ────────────────────────────────────
-function buildLevels(treeNodes) {
-  const nodes   = Object.values(treeNodes)
-  if (!nodes.length) return []
-  const root    = nodes.find((n) => n.parentId === null)
-  if (!root) return []
-  const levels  = []
-  let queue     = [root]
-  while (queue.length) {
-    levels.push(queue)
-    const next = []
-    for (const n of queue) {
-      if (n.leftChildId  != null && treeNodes[n.leftChildId])  next.push(treeNodes[n.leftChildId])
-      if (n.rightChildId != null && treeNodes[n.rightChildId]) next.push(treeNodes[n.rightChildId])
-    }
-    queue = next
-  }
-  return levels
-}
-
 // ─── single tree node card ────────────────────────────────────────────────────
-function TreeNode({ node, isActive, isLeft, isRight, compareIdx, writeIdx, totalLen }) {
+function TreeNode({ node, isActive, isLeft, isRight, compareIdx, writeIdx }) {
   const col   = levelColor(node.level)
   const state = node.state  // pending | active | splitting | merging | sorted
 
@@ -44,8 +24,6 @@ function TreeNode({ node, isActive, isLeft, isRight, compareIdx, writeIdx, total
     merging:   "⇌ merging",
     sorted:    "✓ sorted",
   }[state]
-
-  const isInvolved = isActive || isLeft || isRight
 
   return (
     <div
@@ -117,7 +95,7 @@ const PHASE_META = {
 }
 
 // ─── main component ────────────────────────────────────────────────────────────
-function MergeSortRecursionVisualizer({ algo, onBack }) {
+function MergeSortRecursionVisualizer({ onBack }) {
   const [sampleKey,  setSampleKey]  = useState("6")
   const [stepIndex,  setStepIndex]  = useState(0)
   const [isPlaying,  setIsPlaying]  = useState(false)
@@ -130,12 +108,26 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
   // auto-play
   useEffect(() => {
     if (!isPlaying) return undefined
-    if (stepIndex >= steps.length - 1) { setIsPlaying(false); return undefined }
-    const t = setTimeout(() => setStepIndex((s) => s + 1), speed)
+    const t = setTimeout(() => {
+      setStepIndex((s) => {
+        if (s >= steps.length - 1) {
+          setIsPlaying(false)
+          return s
+        }
+
+        const next = s + 1
+        if (next >= steps.length - 1) setIsPlaying(false)
+        return next
+      })
+    }, speed)
     return () => clearTimeout(t)
   }, [isPlaying, stepIndex, steps.length, speed])
 
-  useEffect(() => { setStepIndex(0); setIsPlaying(false) }, [sampleKey])
+  const changeSample = useCallback((nextSample) => {
+    setSampleKey(nextSample)
+    setStepIndex(0)
+    setIsPlaying(false)
+  }, [])
 
   const prev    = useCallback(() => { setStepIndex((s) => Math.max(s - 1, 0)); setIsPlaying(false) }, [])
   const nextBtn = useCallback(() => { setStepIndex((s) => Math.min(s + 1, steps.length - 1)); setIsPlaying(false) }, [steps.length])
@@ -145,7 +137,6 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
     setIsPlaying((p) => !p)
   }, [stepIndex, steps.length])
 
-  const levels      = buildLevels(step.treeNodes)
   const phaseMeta   = PHASE_META[step.phase] || PHASE_META.idle
   const progress    = steps.length > 1 ? (stepIndex / (steps.length - 1)) * 100 : 0
 
@@ -186,7 +177,7 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
                 const nodes = step.treeNodes || {}
                 const root = Object.values(nodes).find((n) => n && n.parentId === null)
 
-                if (!root) return <div className="msrv-empty">Hit Play to watch the tree grow</div>
+                if (!root) return <div className="msrv-empty">Hit Play to watch the tree grow</div>
 
                 const renderNode = (node) => {
                   if (!node) return null
@@ -202,7 +193,6 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
                         isRight ={step.rightId     === node.id}
                         compareIdx={step.compareIdx}
                         writeIdx  ={step.writeIdx}
-                        totalLen  ={values.length}
                       />
 
                       {(left || right) && (
@@ -299,7 +289,7 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
         <div className="msrv-controls">
           <select
             value={sampleKey}
-            onChange={(e) => setSampleKey(e.target.value)}
+            onChange={(e) => changeSample(e.target.value)}
             className="msrv-select"
           >
             <option value="6">Sample (6 elements)</option>

@@ -46,7 +46,7 @@ export const algorithms = [
     difficulty: 2,
   },
   {
-    id: "quick",
+    id: "quicksort",
     title: "Quick Sort",
     desc: "Picks a pivot and partitions the array around it. Fastest in practice for most inputs.",
     tag: "sorting",

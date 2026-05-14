@@ -201,6 +201,65 @@
   align-items: flex-start;
 }
 
+/* New tree layout styles */
+.msrv-tree-root {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem 0 2rem;
+}
+
+.msrv-tree-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.msrv-children {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.msrv-child-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+/* connector lines from parent to children */
+.msrv-tree-node-wrapper > .msrv-node {
+  position: relative;
+}
+.msrv-tree-node-wrapper > .msrv-children::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  z-index: 0;
+}
+.msrv-child-col::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+}
+
+/* responsive: stack children vertically on narrow screens */
+@media (max-width: 720px) {
+  .msrv-children { flex-direction: column; gap: 10px; }
+}
+
 /* ── Tree node card ──────────────────────────────────────────────────────────── */
 .msrv-node {
   position: relative;

@@ -179,24 +179,23 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
         {/* ── Main: tree + sidebar ── */}
         <div className="msrv-workspace">
 
-          {/* ── Recursion Tree ── */}
+          {/* Recursion Tree (rendered as a true tree) */}
           <div className="msrv-tree-panel">
-
-            {/* level depth labels on the left */}
             <div className="msrv-tree-body">
-              {levels.map((levelNodes, lvl) => (
-                <div key={lvl} className="msrv-level-row">
-                  <div
-                    className="msrv-level-tag"
-                    style={{ color: levelColor(lvl).text }}
-                  >
-                    Level {lvl}
-                  </div>
+              {(() => {
+                const nodes = step.treeNodes || {}
+                const root = Object.values(nodes).find((n) => n && n.parentId === null)
 
-                  <div className="msrv-level-nodes">
-                    {levelNodes.map((node) => (
+                if (!root) return <div className="msrv-empty">Hit Play to watch the tree grow</div>
+
+                const renderNode = (node) => {
+                  if (!node) return null
+                  const left  = node.leftChildId  != null ? nodes[node.leftChildId]  : null
+                  const right = node.rightChildId != null ? nodes[node.rightChildId] : null
+
+                  return (
+                    <div key={node.id} className="msrv-tree-node-wrapper" style={{ ['--level']: node.level }}>
                       <TreeNode
-                        key={node.id}
                         node={node}
                         isActive={step.activeId    === node.id}
                         isLeft  ={step.leftId      === node.id}
@@ -205,14 +204,19 @@ function MergeSortRecursionVisualizer({ algo, onBack }) {
                         writeIdx  ={step.writeIdx}
                         totalLen  ={values.length}
                       />
-                    ))}
-                  </div>
-                </div>
-              ))}
 
-              {levels.length === 0 && (
-                <div className="msrv-empty">Hit Play to watch the tree grow…</div>
-              )}
+                      {(left || right) && (
+                        <div className="msrv-children">
+                          {left  && <div className="msrv-child-col">{renderNode(left)}</div>}
+                          {right && <div className="msrv-child-col">{renderNode(right)}</div>}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+
+                return <div className="msrv-tree-root">{renderNode(root)}</div>
+              })()}
             </div>
           </div>
 

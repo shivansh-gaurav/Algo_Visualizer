@@ -13,6 +13,8 @@ import FactorialVisualizer from "./factorial/FactorialVisualizer"
 import BacktrackingVisualizer from "./Backtracking/BacktrackingVisualizer"
 import MergeSortVisualizer from "./merge_sort/MergeSortVisualizer"  
 import MergeSortRecursionVisualizer from "./merge_sort_recurrsion/MergeSortRecursionVisualizer"
+import QuickSortVisualizer from "./Quick Sort/Quicksortvisualizer"
+import CountingSortVisualizer from "./Counting Sort/Countingsortvisualizer"
 import { algorithms, filters } from "./data/algorithms"
 
 function App() {
@@ -118,7 +120,22 @@ if (selectedAlgo?.id === "mergesort-rec") {
     />
   )
 }
-
+if (selectedAlgo?.id === "quicksort") {
+  return (
+    <QuickSortVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
+if (selectedAlgo?.id === "counting") {
+  return (
+    <CountingSortVisualizer
+      algo={selectedAlgo}
+      onBack={() => setSelectedAlgo(null)}
+    />
+  )
+}
   return (
     <div className="page">
       <Hero />
@@ -137,10 +154,11 @@ if (selectedAlgo?.id === "mergesort-rec") {
         onFilter={setActive}
       />
 
-      <BounceCards
+    <BounceCards
         items={filtered}
         enableHover
         onSelect={(algo) => {
+      console.log("algo selected:", algo?.id)
           if (
             algo.id === "bubble" ||
             algo.id === "towerofhanoi" ||
@@ -151,8 +169,10 @@ if (selectedAlgo?.id === "mergesort-rec") {
             algo.id === "insertion" ||
             algo.id === "factorial" ||
             algo.id === "backtracking" ||
-            algo.id === "merge"
-            || algo.id === "mergesort-rec"
+            algo.id === "merge" ||
+            algo.id === "mergesort-rec" ||
+            algo.id === "quicksort" ||
+            algo.id === "counting"
           ) {
             setSelectedAlgo(algo)
           }

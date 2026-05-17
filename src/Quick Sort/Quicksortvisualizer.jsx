@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import "./QuickSortVisualizer.css"
+import "./Quicksortvisualizer.css"
 import SortingVisualizerShell from "../components/SortingVisualizerShell"
 import {
   formatValues,

@@ -351,3 +351,133 @@ body:has(.insertion-page) {
     justify-content: space-between;
   }
 }
+
+.insertion-sort-visual {
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.2rem;
+  background:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    rgba(10,10,18,0.28);
+  background-size: 100% 20%;
+}
+
+.insertion-key-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 0.85rem;
+  background: rgba(255,255,255,0.035);
+}
+
+.insertion-key-card div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.insertion-key-card span {
+  color: rgba(255,255,255,0.42);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.insertion-key-card strong {
+  color: #e9d5ff;
+  font-size: 18px;
+}
+
+.insertion-hand-row {
+  min-height: 350px;
+  display: grid;
+  grid-template-columns: repeat(var(--item-count, 8), minmax(72px, 1fr));
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 1rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+}
+
+.insertion-card {
+  min-height: 300px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 0.8rem 0.55rem;
+  display: grid;
+  align-content: space-between;
+  justify-items: center;
+  background: rgba(255,255,255,0.045);
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.insertion-card span,
+.insertion-card em {
+  color: rgba(255,255,255,0.4);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.insertion-card strong {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 18px;
+}
+
+.insertion-card--sorted {
+  border-color: rgba(74,222,128,0.44);
+  background: rgba(74,222,128,0.1);
+}
+
+.insertion-card--key {
+  transform: translateY(-16px) scale(1.04);
+  border-color: rgba(251,191,36,0.82);
+  background: rgba(251,191,36,0.16);
+  box-shadow: 0 0 0 2px rgba(251,191,36,0.18), 0 22px 42px rgba(251,191,36,0.13);
+}
+
+.insertion-card--key strong {
+  background: linear-gradient(180deg, #fef3c7, #fbbf24);
+  color: #1f1300;
+}
+
+.insertion-card--compare {
+  transform: translateY(-10px);
+  border-color: rgba(244,114,182,0.72);
+  background: rgba(244,114,182,0.14);
+}
+
+.insertion-card--shift {
+  border-color: rgba(34,211,238,0.68);
+  background: rgba(34,211,238,0.13);
+}
+
+.insertion-card--shift strong {
+  background: linear-gradient(180deg, #cffafe, #22d3ee);
+  color: #05252d;
+}
+
+@media (max-width: 640px) {
+  .insertion-sort-visual {
+    min-height: auto;
+    padding: 0.85rem;
+  }
+
+  .insertion-key-card {
+    grid-template-columns: 1fr;
+  }
+}

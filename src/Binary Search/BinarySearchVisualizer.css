@@ -304,3 +304,194 @@
     flex: 1 1 calc(50% - 0.75rem);
   }
 }
+
+.binary-search-visual {
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.2rem;
+  background:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    rgba(10,10,18,0.28);
+  background-size: 100% 20%;
+}
+
+.binary-status-card,
+.binary-board,
+.binary-pointer-row {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+}
+
+.binary-status-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem;
+}
+
+.binary-status-card div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.binary-status-card span {
+  color: rgba(255,255,255,0.42);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.binary-status-card strong {
+  color: #d9f99d;
+  font-size: 18px;
+}
+
+.binary-board {
+  min-height: 270px;
+  display: grid;
+  grid-template-columns: repeat(var(--item-count, 11), minmax(62px, 1fr));
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 1rem;
+  align-items: stretch;
+}
+
+.binary-sort-notice {
+  border: 1px solid rgba(250,204,21,0.34);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  color: #fde68a;
+  background: rgba(250,204,21,0.1);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.binary-cell {
+  min-height: 230px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 0.75rem 0.5rem;
+  display: grid;
+  align-content: space-between;
+  justify-items: center;
+  background: rgba(255,255,255,0.045);
+  transition: opacity 0.24s ease, transform 0.24s ease, background 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.binary-cell--discarded {
+  opacity: 0.28;
+}
+
+.binary-cell--active {
+  border-color: rgba(163,230,53,0.34);
+  background: rgba(163,230,53,0.1);
+}
+
+.binary-cell--middle {
+  transform: translateY(-14px) scale(1.04);
+  border-color: rgba(250,204,21,0.78);
+  background: rgba(250,204,21,0.15);
+  box-shadow: 0 0 0 2px rgba(250,204,21,0.18), 0 22px 42px rgba(250,204,21,0.12);
+}
+
+.binary-cell--found {
+  border-color: rgba(52,211,153,0.82);
+  background: rgba(52,211,153,0.18);
+}
+
+.binary-cell__index,
+.binary-cell__role {
+  color: rgba(255,255,255,0.38);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.binary-cell strong {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 18px;
+}
+
+.binary-cell--middle strong {
+  background: linear-gradient(180deg, #fef3c7, #f59e0b);
+  color: #1f1300;
+}
+
+.binary-cell--found strong {
+  background: linear-gradient(180deg, #bbf7d0, #34d399);
+  color: #052e1a;
+}
+
+.binary-pointer-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  padding: 0.75rem;
+}
+
+.binary-pointer-row span {
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 10px;
+  padding: 0.7rem;
+  color: rgba(255,255,255,0.74);
+  background: rgba(255,255,255,0.04);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.binary-target-control {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 0 1rem;
+  color: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.06);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.binary-target-control select {
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  color: #fff;
+  background: #13131f;
+  font: inherit;
+}
+
+@media (max-width: 640px) {
+  .binary-search-visual {
+    min-height: auto;
+    padding: 0.85rem;
+  }
+
+  .binary-status-card,
+  .binary-pointer-row {
+    grid-template-columns: 1fr;
+  }
+
+  .binary-board {
+    grid-template-columns: repeat(var(--item-count, 11), minmax(56px, 1fr));
+  }
+
+  .binary-cell {
+    min-height: 170px;
+  }
+}

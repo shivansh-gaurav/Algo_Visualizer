@@ -1,6 +1,12 @@
-import { useMemo, useState, useEffect, useCallback } from "react"
+import { useMemo, useState, useEffect } from "react"
 import "./Countingsortvisualizer.css"
-import { buildCountingSortSteps, CS_SAMPLE6, CS_SAMPLE8, CS_SAMPLE_TIES } from "./countingSteps"
+import SortingVisualizerShell from "../components/SortingVisualizerShell"
+import {
+  formatValues,
+  makeRandomValues,
+  parseManualValues,
+} from "../utils/sortingInputs"
+import { buildCountingSortSteps, CS_SAMPLE8 } from "./countingSteps"
 
 // ─── phase metadata ───────────────────────────────────────────────────────────
 const PHASE_META = {
@@ -11,23 +17,51 @@ const PHASE_META = {
   done:   { icon: "✓", label: "Done!",       color: "#4ade80", step: 4 },
 }
 
-// ─── phase pipeline stepper ───────────────────────────────────────────────────
+const PSEUDOCODE_LINES = [
+  "create count array",
+  "for each value v in input",
+  "  count[v] += 1",
+  "prefix[0] = count[0]",
+  "for v = 1 to max",
+  "  prefix[v] = prefix[v - 1] + count[v]",
+  "for i = n - 1 down to 0",
+  "  output[prefix[input[i]] - 1] = input[i]",
+  "  prefix[input[i]] -= 1",
+]
+
+const PHASE_LINE = {
+  idle: 0,
+  count: 1,
+  prefix: 4,
+  place: 6,
+  done: 8,
+}
+
 function PhasePipeline({ currentPhase }) {
   const phases = [
-    { key: "count",  label: "① Count",       desc: "Tally each value" },
-    { key: "prefix", label: "② Prefix Sum",  desc: "Compute positions" },
-    { key: "place",  label: "③ Place",       desc: "Fill output array" },
+    { key: "count", label: "1 Count", desc: "tally values" },
+    { key: "prefix", label: "2 Prefix", desc: "compute slots" },
+    { key: "place", label: "3 Place", desc: "fill output" },
   ]
-  const order = ["idle","count","prefix","place","done"]
-  const cur   = order.indexOf(currentPhase)
+  const order = ["idle", "count", "prefix", "place", "done"]
+  const current = order.indexOf(currentPhase)
 
   return (
-    <div className="csv-pipeline">
+    <div className="csv-pipeline csv-pipeline--compact">
       {phases.map(({ key, label, desc }) => {
         const phaseOrder = order.indexOf(key)
-        const state = phaseOrder < cur ? "done" : phaseOrder === cur ? "active" : "pending"
+        const state =
+          phaseOrder < current
+            ? "done"
+            : phaseOrder === current
+              ? "active"
+              : "pending"
+
         return (
-          <div key={key} className={`csv-pipeline-step csv-pipeline-step--${state}`}>
+          <div
+            className={`csv-pipeline-step csv-pipeline-step--${state}`}
+            key={key}
+          >
             <span className="csv-pipeline-step__label">{label}</span>
             <span className="csv-pipeline-step__desc">{desc}</span>
           </div>
@@ -98,19 +132,19 @@ function ArrayRow({ label, sublabel, children, highlight }) {
 }
 
 // ─── main component ────────────────────────────────────────────────────────────
-function CountingSortVisualizer({ onBack }) {
-  const [sampleKey, setSampleKey] = useState("6")
+function CountingSortVisualizer({ algo, onBack }) {
+  const [values, setValues] = useState(CS_SAMPLE8)
+  const [manualInput, setManualInput] = useState(formatValues(CS_SAMPLE8))
+  const [inputError, setInputError] = useState("")
   const [stepIndex, setStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [speed,     setSpeed]     = useState(520)
 
-  const values = sampleKey === "6" ? CS_SAMPLE6 : sampleKey === "8" ? CS_SAMPLE8 : CS_SAMPLE_TIES
   const steps  = useMemo(() => buildCountingSortSteps(values), [values])
   const step   = steps[stepIndex] || { input: values, count: [], prefix: null, output: null, phase: "idle", message: "", hint: "" }
 
   useEffect(() => {
     if (!isPlaying) return undefined
-    const t = setTimeout(() => {
+    const timer = setInterval(() => {
       setStepIndex((s) => {
         if (s >= steps.length - 1) {
           setIsPlaying(false)
@@ -121,205 +155,167 @@ function CountingSortVisualizer({ onBack }) {
         if (next >= steps.length - 1) setIsPlaying(false)
         return next
       })
-    }, speed)
-    return () => clearTimeout(t)
-  }, [isPlaying, stepIndex, steps.length, speed])
+    }, 650)
+    return () => clearInterval(timer)
+  }, [isPlaying, steps.length])
 
-  const changeSample = useCallback((nextSample) => {
-    setSampleKey(nextSample)
-    setStepIndex(0)
+  const resetRun = (nextValues = values) => {
     setIsPlaying(false)
-  }, [])
+    setValues(nextValues)
+    setManualInput(formatValues(nextValues))
+    setInputError("")
+    setStepIndex(0)
+  }
 
-  const prev     = useCallback(() => { setStepIndex((s) => Math.max(s - 1, 0)); setIsPlaying(false) }, [])
-  const nextStep = useCallback(() => { setStepIndex((s) => Math.min(s + 1, steps.length - 1)); setIsPlaying(false) }, [steps.length])
-  const reset    = useCallback(() => { setStepIndex(0); setIsPlaying(false) }, [])
-  const toggle   = useCallback(() => {
-    if (stepIndex >= steps.length - 1) setStepIndex(0)
-    setIsPlaying((p) => !p)
-  }, [stepIndex, steps.length])
+  const applyManualValues = (event) => {
+    event.preventDefault()
+
+    const result = parseManualValues(manualInput, {
+      minValue: 0,
+      maxValue: 12,
+    })
+
+    if (result.error) {
+      setInputError(result.error)
+      return
+    }
+
+    resetRun(result.values)
+  }
 
   const phaseMeta = PHASE_META[step.phase] || PHASE_META.idle
-  const progress  = steps.length > 1 ? (stepIndex / (steps.length - 1)) * 100 : 0
   const maxCount  = Math.max(...(step.count || [1]), 1)
   const maxVal    = step.maxVal || 0
+  const focusValue =
+    step.activeInput != null
+      ? step.input[step.activeInput]
+      : step.activeFrom ?? step.activeCount ?? step.activePrefix
+  const focusText = {
+    idle: "The input waits on the left. Counting Sort will count values before it writes the final output.",
+    count: `Read value ${focusValue ?? "-"} and update its matching bucket.`,
+    prefix: `Turn bucket ${step.activePrefix ?? "-"} into a position marker.`,
+    place: `Use prefix[${step.activeFrom ?? "-"}] to choose the next output slot.`,
+    done: "The output row now contains the sorted array.",
+  }[step.phase] || step.message
 
   return (
-    <main className="csv-page">
-      <div className="csv-shell">
+    <SortingVisualizerShell
+      algo={algo}
+      onBack={onBack}
+      stats={[
+        `Time ${algo?.complexity || "O(n+k)"}`,
+        `Phase ${phaseMeta.label}`,
+        `${steps.length} steps`,
+      ]}
+      stageLabel="Counting sort visualization"
+      visualClassName="counting-sort-visual"
+      visual={
+        <>
+          <PhasePipeline currentPhase={step.phase} />
 
-        {/* ── Header ── */}
-        <header className="csv-header">
-          <button className="csv-back" onClick={onBack}>← Back</button>
-          <div className="csv-header__title">
-            <h1>Counting Sort</h1>
-            <span className="csv-header__sub">Integer · Non-comparative · Stable</span>
+          <div
+            className="csv-focus-card"
+            style={{ "--phase-color": phaseMeta.color }}
+          >
+            <span className="csv-focus-card__icon">{phaseMeta.icon}</span>
+            <div>
+              <span className="csv-focus-card__label">{phaseMeta.label}</span>
+              <p>{focusText}</p>
+            </div>
           </div>
-          <div className="csv-header__chips">
-            <span className="csv-chip">O(n + k)</span>
-            <span className="csv-chip csv-chip--alt">k = max value</span>
-            <span className="csv-chip csv-chip--stable">Zero comparisons</span>
-          </div>
-        </header>
 
-        {/* ── Phase pipeline ── */}
-        <PhasePipeline currentPhase={step.phase} />
+          <ArrayRow
+            label="input[]"
+            sublabel="original"
+            highlight={step.phase === "count" || step.phase === "place"}
+          >
+            {step.input.map((value, index) => (
+              <Cell
+                key={index}
+                value={value}
+                index={index}
+                isActive={step.activeInput === index}
+                isSorted={step.phase === "done"}
+              />
+            ))}
+          </ArrayRow>
 
-        {/* ── Phase banner ── */}
-        <div className="csv-phase-bar" style={{ "--phase-color": phaseMeta.color }}>
-          <span className="csv-phase-bar__icon">{phaseMeta.icon}</span>
-          <span className="csv-phase-bar__label">{phaseMeta.label}</span>
-          <span className="csv-phase-bar__msg">{step.message}</span>
-        </div>
-
-        {/* ── Workspace ── */}
-        <div className="csv-workspace">
-
-          {/* ── Main: three arrays + count buckets ── */}
-          <div className="csv-main-panel">
-
-            {/* INPUT row */}
-            <ArrayRow
-              label="input[]"
-              sublabel="original — never changes"
-              highlight={step.phase === "count" || step.phase === "place"}
-            >
-              {step.input.map((v, i) => (
-                <Cell
-                  key={i} value={v} index={i}
-                  isActive={step.activeInput === i}
-                  isSorted={step.phase === "done"}
+          <div className="csv-buckets-section">
+            <div className="csv-buckets-header">
+              <span className="csv-buckets-header__title">
+                {step.phase === "prefix" ||
+                step.phase === "place" ||
+                step.phase === "done"
+                  ? "count[] to prefix[]"
+                  : "count[]"}
+              </span>
+              <span className="csv-buckets-header__sub">values 0 - {maxVal}</span>
+            </div>
+            <div className="csv-buckets">
+              {(step.count || []).map((count, value) => (
+                <BucketBar
+                  key={value}
+                  value={value}
+                  count={count}
+                  prefix={step.prefix ? step.prefix[value] : null}
+                  isActiveCount={step.activeCount === value}
+                  isActivePrefix={
+                    step.activePrefix === value || step.activeFrom === value
+                  }
+                  maxCount={maxCount}
+                  phase={step.phase}
                 />
               ))}
-            </ArrayRow>
-
-            {/* COUNT / PREFIX BUCKETS */}
-            <div className="csv-buckets-section">
-              <div className="csv-buckets-header">
-                <span className="csv-buckets-header__title">
-                  {step.phase === "prefix" || step.phase === "place" || step.phase === "done"
-                    ? "count[] → prefix[]"
-                    : "count[]"}
-                </span>
-                <span className="csv-buckets-header__sub">one bucket per possible value (0 – {maxVal})</span>
-              </div>
-              <div className="csv-buckets">
-                {(step.count || []).map((c, k) => (
-                  <BucketBar
-                    key={k}
-                    value={k}
-                    count={c}
-                    prefix={step.prefix ? step.prefix[k] : null}
-                    isActiveCount={step.activeCount === k}
-                    isActivePrefix={step.activePrefix === k || step.activeFrom === k}
-                    maxCount={maxCount}
-                    phase={step.phase}
-                  />
-                ))}
-              </div>
             </div>
-
-            {/* OUTPUT row */}
-            <ArrayRow
-              label="output[]"
-              sublabel="sorted result being built"
-              highlight={step.phase === "place" || step.phase === "done"}
-            >
-              {Array.from({ length: step.input.length }, (_, i) => {
-                const val = step.output ? step.output[i] : null
-                return (
-                  <Cell
-                    key={i} value={val ?? "·"} index={i}
-                    isActive={step.activeOutput === i}
-                    isSorted={step.phase === "done" && val !== null}
-                    isNull={val === null}
-                  />
-                )
-              })}
-            </ArrayRow>
-
           </div>
 
-          {/* ── Sidebar ── */}
-          <aside className="csv-sidebar">
-
-            {/* Hint */}
-            <div className="csv-card csv-hint-card">
-              <span className="csv-card__label">What's happening?</span>
-              <p className="csv-hint-text">{step.hint || "—"}</p>
-            </div>
-
-            {/* Progress */}
-            <div className="csv-card">
-              <span className="csv-card__label">Progress</span>
-              <div className="csv-step-count">
-                <strong>{stepIndex + 1}</strong>
-                <span>/ {steps.length}</span>
-              </div>
-              <div className="csv-progress-track">
-                <div className="csv-progress-fill" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-
-            {/* Why no comparisons? */}
-            <div className="csv-card">
-              <span className="csv-card__label">Why O(n + k)?</span>
-              <div className="csv-complexity">
-                <div className="csv-complexity-row">
-                  <span className="csv-complexity-phase">Phase 1</span>
-                  <span className="csv-complexity-cost">O(n) — scan input once</span>
-                </div>
-                <div className="csv-complexity-row">
-                  <span className="csv-complexity-phase">Phase 2</span>
-                  <span className="csv-complexity-cost">O(k) — scan count[] once</span>
-                </div>
-                <div className="csv-complexity-row">
-                  <span className="csv-complexity-phase">Phase 3</span>
-                  <span className="csv-complexity-cost">O(n) — place each element</span>
-                </div>
-                <div className="csv-complexity-row csv-complexity-row--total">
-                  <span className="csv-complexity-phase">Total</span>
-                  <span className="csv-complexity-cost">O(n + k) 🎉</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Legend removed to simplify sidebar and allow full-width content */}
-
-          </aside>
-        </div>
-
-        {/* ── Controls ── */}
-        <div className="csv-controls">
-          <select
-            className="csv-select"
-            value={sampleKey}
-            onChange={(e) => changeSample(e.target.value)}
+          <ArrayRow
+            label="output[]"
+            sublabel="sorted result"
+            highlight={step.phase === "place" || step.phase === "done"}
           >
-            <option value="6">Sample A (6 elements)</option>
-            <option value="8">Sample B (8 elements)</option>
-            <option value="ties">Sample C (with duplicates)</option>
-          </select>
+            {Array.from({ length: step.input.length }, (_, index) => {
+              const value = step.output ? step.output[index] : null
 
-          <button className="csv-btn" onClick={prev}     disabled={stepIndex === 0}>◀ Prev</button>
-          <button className="csv-btn csv-btn--primary" onClick={toggle}>
-            {isPlaying ? "⏸ Pause" : "▶ Play"}
-          </button>
-          <button className="csv-btn" onClick={nextStep} disabled={stepIndex >= steps.length - 1}>Next ▶</button>
-          <button className="csv-btn" onClick={reset}>↺ Reset</button>
-
-          <label className="csv-speed">
-            Speed
-            <input
-              type="range" min={80} max={900} step={40}
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
-            />
-          </label>
-        </div>
-
-      </div>
-    </main>
+              return (
+                <Cell
+                  key={index}
+                  value={value ?? "·"}
+                  index={index}
+                  isActive={step.activeOutput === index}
+                  isSorted={step.phase === "done" && value !== null}
+                  isNull={value === null}
+                />
+              )
+            })}
+          </ArrayRow>
+        </>
+      }
+      pseudocodeLines={PSEUDOCODE_LINES}
+      activePseudocodeLine={PHASE_LINE[step.phase] ?? 0}
+      stepIndex={stepIndex}
+      stepsLength={steps.length}
+      isPlaying={isPlaying}
+      message={step.message}
+      manualInput={manualInput}
+      inputError={inputError}
+      manualInputId="counting-manual-array"
+      placeholder="6, 2, 8, 3"
+      onManualInputChange={(value) => {
+        setManualInput(value)
+        setInputError("")
+      }}
+      onApplyManualValues={applyManualValues}
+      onPrevious={() => setStepIndex((current) => Math.max(0, current - 1))}
+      onTogglePlay={() => setIsPlaying((playing) => !playing)}
+      onNext={() =>
+        setStepIndex((current) => Math.min(steps.length - 1, current + 1))
+      }
+      onReset={() => resetRun()}
+      onShuffle={() =>
+        resetRun(makeRandomValues({ length: 8, minValue: 0, maxValue: 9 }))
+      }
+    />
   )
 }
 

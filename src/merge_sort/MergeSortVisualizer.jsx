@@ -1,17 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import "./MergeSortVisualizer.css"
+import SortingVisualizerShell from "../components/SortingVisualizerShell"
+import {
+  formatValues,
+  makeRandomValues,
+  parseManualValues,
+} from "../utils/sortingInputs"
 
 const codeLines = [
-  "iterativeMergeSort(array)",
-  "  width = 1",
-  "  while width < n:",
-  "    for i = 0 to n-1 step 2*width",
-  "      merge array[i..i+width-1] and array[i+width..i+2*width-1]",
-  "    width *= 2",
-  "merge(left, right)",
-  "  create left and right buffers",
-  "  while left and right: compare and write smaller",
-  "  copy remaining items",
+  "width = 1",
+  "while width < n",
+  "  for start = 0 to n - 1 step 2 * width",
+  "    split into left and right runs",
+  "    compare front values",
+  "    write the smaller value",
+  "    copy remaining values",
+  "  width = width * 2",
+  "array is sorted",
 ]
 
 const initialArray = [58, 23, 76, 11, 64, 37, 90, 44]
@@ -23,9 +28,12 @@ function createStep(config) {
     lo: config.lo ?? null,
     mid: config.mid ?? null,
     hi: config.hi ?? null,
+    width: config.width ?? 1,
     leftIndex: config.leftIndex ?? null,
     rightIndex: config.rightIndex ?? null,
     writeIndex: config.writeIndex ?? null,
+    leftBuffer: config.leftBuffer ? [...config.leftBuffer] : [],
+    rightBuffer: config.rightBuffer ? [...config.rightBuffer] : [],
     compareCount: config.compareCount ?? 0,
     writeCount: config.writeCount ?? 0,
     label: config.label,
@@ -44,12 +52,13 @@ function buildSteps(source) {
   output.push(createStep({
     array: arr,
     activeLine: 1,
+    width: 1,
     label: "Ready",
-    title: "Begin iterative merge sort",
-    text: "Start with width = 1 and merge small runs into larger sorted runs.",
+    title: "Start with tiny sorted runs",
+    text: "Every single value is already a sorted run of length 1.",
   }))
 
-  const mergeRange = (lo, mid, hi) => {
+  const mergeRange = (lo, mid, hi, width) => {
     const left = arr.slice(lo, mid + 1)
     const right = arr.slice(mid + 1, hi + 1)
     let l = 0
@@ -58,33 +67,41 @@ function buildSteps(source) {
 
     output.push(createStep({
       array: arr,
-      activeLine: 7,
+      activeLine: 4,
       lo,
       mid,
       hi,
-      label: `Merge [${lo}-${hi}]`,
-      title: `Merging ranges ${lo}-${mid} and ${mid + 1}-${hi}`,
-      text: `Create left and right buffers to prepare for merging.`,
+      width,
+      leftBuffer: left,
+      rightBuffer: right,
+      compareCount,
+      writeCount,
+      label: `Merge ${lo}-${hi}`,
+      title: `Merge two sorted runs`,
+      text: `Left run [${left.join(", ")}] and right run [${right.join(", ")}] will be zipped together.`,
     }))
 
     while (l < left.length && r < right.length) {
       compareCount += 1
       output.push(createStep({
         array: arr,
-        activeLine: 9,
+        activeLine: 5,
         lo,
         mid,
         hi,
+        width,
         leftIndex: lo + l,
         rightIndex: mid + 1 + r,
         writeIndex: w,
+        leftBuffer: left,
+        rightBuffer: right,
         compareCount,
         writeCount,
         label: `Compare ${compareCount}`,
-        title: `${left[l]} ? ${right[r]}`,
+        title: `${left[l]} vs ${right[r]}`,
         text: left[l] <= right[r]
-          ? `Left ${left[l]} is smaller or equal; it will be written into index ${w}.`
-          : `Right ${right[r]} is smaller; it will be written into index ${w}.`,
+          ? `${left[l]} is smaller or equal, so it goes into index ${w}.`
+          : `${right[r]} is smaller, so it goes into index ${w}.`,
       }))
 
       if (left[l] <= right[r]) {
@@ -98,16 +115,19 @@ function buildSteps(source) {
       writeCount += 1
       output.push(createStep({
         array: arr,
-        activeLine: 9,
+        activeLine: 6,
         lo,
         mid,
         hi,
+        width,
         writeIndex: w,
+        leftBuffer: left,
+        rightBuffer: right,
         compareCount,
         writeCount,
         label: `Write ${writeCount}`,
-        title: `Wrote value at index ${w}`,
-        text: `One item written into the merged range at index ${w}.`,
+        title: `Place ${arr[w]} at index ${w}`,
+        text: "The merged run grows one slot from left to right.",
       }))
 
       w += 1
@@ -119,16 +139,19 @@ function buildSteps(source) {
       writeCount += 1
       output.push(createStep({
         array: arr,
-        activeLine: 10,
+        activeLine: 7,
         lo,
         mid,
         hi,
+        width,
         writeIndex: w,
+        leftBuffer: left,
+        rightBuffer: right,
         compareCount,
         writeCount,
-        label: `Write ${writeCount}`,
-        title: `Copy remaining left to ${w}`,
-        text: `Left buffer item moved into place.`,
+        label: `Copy left`,
+        title: `Copy remaining ${arr[w]}`,
+        text: "The right run is empty, so the rest of the left run can slide in.",
       }))
       w += 1
     }
@@ -139,16 +162,19 @@ function buildSteps(source) {
       writeCount += 1
       output.push(createStep({
         array: arr,
-        activeLine: 10,
+        activeLine: 7,
         lo,
         mid,
         hi,
+        width,
         writeIndex: w,
+        leftBuffer: left,
+        rightBuffer: right,
         compareCount,
         writeCount,
-        label: `Write ${writeCount}`,
-        title: `Copy remaining right to ${w}`,
-        text: `Right buffer item moved into place.`,
+        label: `Copy right`,
+        title: `Copy remaining ${arr[w]}`,
+        text: "The left run is empty, so the rest of the right run can slide in.",
       }))
       w += 1
     }
@@ -159,16 +185,29 @@ function buildSteps(source) {
       lo,
       mid,
       hi,
+      width,
+      leftBuffer: left,
+      rightBuffer: right,
+      compareCount,
+      writeCount,
       label: `Sorted ${lo}-${hi}`,
-      title: `Range ${lo} to ${hi} is now sorted`,
-      text: `Merged subranges are now in order.`,
+      title: `Run ${lo}-${hi} is sorted`,
+      text: "Two smaller sorted runs have become one larger sorted run.",
     }))
   }
 
-  // bottom-up iterative merge: width = 1,2,4,...
   let width = 1
   while (width < n) {
-    output.push(createStep({ array: arr, activeLine: 2, label: `Width ${width}`, title: `Merge runs of width ${width}`, text: `Merge adjacent runs of size ${width}.` }))
+    output.push(createStep({
+      array: arr,
+      activeLine: 2,
+      width,
+      compareCount,
+      writeCount,
+      label: `Width ${width}`,
+      title: `Merge runs of width ${width}`,
+      text: `Pairs of sorted runs with length ${width} are merged into runs of length ${width * 2}.`,
+    }))
 
     for (let i = 0; i < n; i += 2 * width) {
       const lo = i
@@ -176,7 +215,7 @@ function buildSteps(source) {
       const hi = Math.min(i + 2 * width - 1, n - 1)
 
       if (mid < hi) {
-        mergeRange(lo, mid, hi)
+        mergeRange(lo, mid, hi, width)
       }
     }
 
@@ -185,156 +224,196 @@ function buildSteps(source) {
 
   output.push(createStep({
     array: arr,
-    activeLine: 6,
+    activeLine: 9,
+    width,
+    compareCount,
+    writeCount,
     label: "Complete",
     title: "Array sorted",
-    text: "The entire array is now sorted by iterative merge sort.",
+    text: "Every run has merged back into one sorted array.",
   }))
 
   return output
 }
 
-function randomArray() {
-  return Array.from({ length: 8 }, () => Math.floor(Math.random() * 75) + 10)
-}
-
 function MergeSortVisualizer({ algo, onBack }) {
   const [values, setValues] = useState(initialArray)
+  const [manualInput, setManualInput] = useState(formatValues(initialArray))
+  const [inputError, setInputError] = useState("")
   const [stepIndex, setStepIndex] = useState(0)
-  const [speed, setSpeed] = useState(700)
   const [isPlaying, setIsPlaying] = useState(false)
-  const timerRef = useRef(null)
+
   const steps = useMemo(() => buildSteps(values), [values])
   const step = steps[stepIndex]
-  const maxValue = Math.max(...step.array)
-
-  const stopPlaying = useCallback(() => {
-    setIsPlaying(false)
-    window.clearInterval(timerRef.current)
-    timerRef.current = null
-  }, [])
-
-  const resetWith = (nextValues) => {
-    stopPlaying()
-    setValues([...nextValues])
-    setStepIndex(0)
-  }
-
-  const goNext = useCallback(() => {
-    setStepIndex((index) => {
-      if (index < steps.length - 1) return index + 1
-
-      stopPlaying()
-      return index
-    })
-  }, [steps.length, stopPlaying])
 
   useEffect(() => {
     if (!isPlaying) return undefined
-    timerRef.current = window.setInterval(goNext, speed)
-    return () => window.clearInterval(timerRef.current)
-  }, [goNext, isPlaying, speed])
 
-  useEffect(() => () => window.clearInterval(timerRef.current), [])
+    const timer = window.setInterval(() => {
+      setStepIndex((current) => {
+        if (current >= steps.length - 1) {
+          setIsPlaying(false)
+          return current
+        }
+
+        return current + 1
+      })
+    }, 650)
+
+    return () => window.clearInterval(timer)
+  }, [isPlaying, steps.length])
+
+  const resetRun = (nextValues = values) => {
+    setIsPlaying(false)
+    setValues(nextValues)
+    setManualInput(formatValues(nextValues))
+    setInputError("")
+    setStepIndex(0)
+  }
+
+  const applyManualValues = (event) => {
+    event.preventDefault()
+
+    const result = parseManualValues(manualInput)
+
+    if (result.error) {
+      setInputError(result.error)
+      return
+    }
+
+    resetRun(result.values)
+  }
+
+  const activeRange = step.lo != null && step.hi != null
+  const leftActive =
+    activeRange && step.leftIndex != null ? step.leftIndex - step.lo : null
+  const rightActive =
+    activeRange && step.rightIndex != null ? step.rightIndex - step.mid - 1 : null
 
   return (
-    <main className="merge-page">
-      <header className="merge-topbar">
-        <div className="merge-title">
-          <h1>{algo?.title || "Merge Sort"} Visualizer</h1>
-          <p>
-            Divide the array into halves, sort each half, and merge them back together.
-          </p>
-        </div>
-        <button className="merge-back-link" type="button" onClick={onBack}>Back</button>
-      </header>
-
-      <section className="merge-layout" aria-label="Merge sort visualizer">
-        <div className="merge-panel merge-visual-panel">
-          <div className="merge-stats">
-            <div className="merge-stat"><span>Comparisons</span><strong>{step.compareCount}</strong></div>
-            <div className="merge-stat"><span>Writes</span><strong>{step.writeCount}</strong></div>
-            <div className="merge-stat"><span>Range</span><strong>{step.lo ?? "-"} - {step.hi ?? "-"}</strong></div>
-            <div className="merge-stat"><span>Step</span><strong>{step.label}</strong></div>
-          </div>
-
-          <div className="merge-stage" aria-live="polite">
-            {step.array.map((value, index) => {
-              const classes = [
-                "merge-bar-wrap",
-                index >= (step.lo ?? -1) && index <= (step.hi ?? -2) ? "in-range" : "",
-                index === step.leftIndex ? "left" : "",
-                index === step.rightIndex ? "right" : "",
-                index === step.writeIndex ? "write" : "",
-              ].filter(Boolean).join(" ")
-
-              return (
-                <div className={classes} aria-label={`Value ${value}`} key={`${index}-${value}`}>
-                  <div className="merge-bar" style={{ height: `${Math.max(18, (value / maxValue) * 300)}px` }} />
-                  <div className="merge-bar-label">{value}</div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="merge-legend" aria-label="Color key">
-            <span><span style={{ background: "#60a5fa" }} />active</span>
-            <span><span style={{ background: "#22d3ee" }} />left</span>
-            <span><span style={{ background: "#fbbf24" }} />right</span>
-            <span><span style={{ background: "#fb7185" }} />write</span>
-          </div>
-
-          <div className="merge-controls">
-            <div className="merge-control-buttons">
-              <button className="merge-btn primary" type="button" onClick={() => {
-                if (isPlaying) {
-                  stopPlaying()
-                } else {
-                  if (stepIndex >= steps.length - 1) setStepIndex(0)
-                  setIsPlaying(true)
-                }
-              }}>{isPlaying ? "Pause" : "Play"}</button>
-              <button className="merge-btn" type="button" disabled={stepIndex >= steps.length - 1} onClick={() => {
-                stopPlaying()
-                goNext()
-              }}>Next Step</button>
-              <button className="merge-btn" type="button" onClick={() => resetWith(values)}>Reset</button>
-              <button className="merge-btn" type="button" onClick={() => resetWith(randomArray())}>New Array</button>
+    <SortingVisualizerShell
+      algo={algo}
+      onBack={onBack}
+      stats={[
+        `Time ${algo?.complexity || "O(n log n)"}`,
+        `Run width ${step.width}`,
+        `${steps.length} steps`,
+      ]}
+      stageLabel="Merge sort visualization"
+      visualClassName="merge-sort-visual"
+      visual={
+        <>
+          <div className="merge-run-card">
+            <div>
+              <span>Current run</span>
+              <strong>
+                {activeRange ? `${step.lo} - ${step.hi}` : "waiting"}
+              </strong>
             </div>
-            <label className="merge-speed">
-              Speed
-              <input type="range" min="120" max="1400" step="40" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} />
-            </label>
-          </div>
-        </div>
-
-        <aside className="merge-panel merge-side-panel">
-          <div className="merge-step-card">
-            <span>{step.label}</span>
-            <h2>{step.title}</h2>
-            <p>{step.text}</p>
+            <div>
+              <span>Comparisons</span>
+              <strong>{step.compareCount}</strong>
+            </div>
+            <div>
+              <span>Writes</span>
+              <strong>{step.writeCount}</strong>
+            </div>
           </div>
 
-          <div className="merge-code" aria-label="Merge sort code">
-            {codeLines.map((line, index) => {
-              const lineNumber = index + 1
-              const classes = [
-                "merge-code-line",
-                lineNumber === step.activeLine ? "active" : "",
-                lineNumber < step.activeLine ? "done" : "",
-              ].filter(Boolean).join(" ")
+          <div
+            className="merge-main-array"
+            style={{ "--item-count": step.array.length }}
+          >
+            {step.array.map((value, index) => {
+              const inRange =
+                activeRange && index >= step.lo && index <= step.hi
+              const isLeft = activeRange && index >= step.lo && index <= step.mid
+              const isRight = activeRange && index > step.mid && index <= step.hi
+              const isWrite = index === step.writeIndex
+              const isDone = step.label === "Complete"
 
               return (
-                <div className={classes} key={line}>
-                  <span className="merge-line-no">{lineNumber}</span>
-                  <span>{line}</span>
+                <div
+                  className={[
+                    "merge-tile",
+                    inRange ? "merge-tile--range" : "",
+                    isLeft ? "merge-tile--left" : "",
+                    isRight ? "merge-tile--right" : "",
+                    isWrite ? "merge-tile--write" : "",
+                    isDone ? "merge-tile--done" : "",
+                  ].filter(Boolean).join(" ")}
+                  key={`${value}-${index}`}
+                >
+                  <span className="merge-tile__index">{index}</span>
+                  <strong>{value}</strong>
                 </div>
               )
             })}
           </div>
-        </aside>
-      </section>
-    </main>
+
+          <div className="merge-buffer-grid">
+            <div className="merge-buffer">
+              <span className="merge-buffer__title">Left run</span>
+              <div className="merge-buffer__items">
+                {step.leftBuffer.length ? (
+                  step.leftBuffer.map((value, index) => (
+                    <span
+                      className={index === leftActive ? "active" : ""}
+                      key={`${value}-${index}`}
+                    >
+                      {value}
+                    </span>
+                  ))
+                ) : (
+                  <em>waiting</em>
+                )}
+              </div>
+            </div>
+            <div className="merge-buffer">
+              <span className="merge-buffer__title">Right run</span>
+              <div className="merge-buffer__items">
+                {step.rightBuffer.length ? (
+                  step.rightBuffer.map((value, index) => (
+                    <span
+                      className={index === rightActive ? "active" : ""}
+                      key={`${value}-${index}`}
+                    >
+                      {value}
+                    </span>
+                  ))
+                ) : (
+                  <em>waiting</em>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      }
+      pseudocodeLines={codeLines}
+      activePseudocodeLine={step.activeLine - 1}
+      stepIndex={stepIndex}
+      stepsLength={steps.length}
+      isPlaying={isPlaying}
+      message={`${step.title}. ${step.text}`}
+      manualInput={manualInput}
+      inputError={inputError}
+      manualInputId="merge-manual-array"
+      placeholder="58, 23, 76, 11"
+      onManualInputChange={(value) => {
+        setManualInput(value)
+        setInputError("")
+      }}
+      onApplyManualValues={applyManualValues}
+      onPrevious={() => setStepIndex((current) => Math.max(0, current - 1))}
+      onTogglePlay={() => setIsPlaying((playing) => !playing)}
+      onNext={() =>
+        setStepIndex((current) => Math.min(steps.length - 1, current + 1))
+      }
+      onReset={() => resetRun()}
+      onShuffle={() =>
+        resetRun(makeRandomValues({ length: 8, minValue: 10, maxValue: 90 }))
+      }
+    />
   )
 }
 

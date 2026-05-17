@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import "./SelectionSortVisualizer.css"
+import SortingVisualizerShell from "../components/SortingVisualizerShell"
+import {
+  formatValues,
+  makeRandomValues,
+  parseManualValues,
+} from "../utils/sortingInputs"
 
 const codeLines = [
   "for i = 0 to n - 2",
@@ -183,154 +189,150 @@ function buildSteps(source) {
   return output
 }
 
-function randomArray() {
-  return Array.from({ length: 8 }, () => Math.floor(Math.random() * 75) + 15)
-}
-
 function SelectionSortVisualizer({ algo, onBack }) {
   const [values, setValues] = useState(initialArray)
+  const [manualInput, setManualInput] = useState(formatValues(initialArray))
+  const [inputError, setInputError] = useState("")
   const [stepIndex, setStepIndex] = useState(0)
-  const [speed, setSpeed] = useState(700)
   const [isPlaying, setIsPlaying] = useState(false)
-  const timerRef = useRef(null)
   const steps = useMemo(() => buildSteps(values), [values])
   const step = steps[stepIndex]
   const passTotal = values.length - 1
   const pass = step.sortedUntil >= passTotal ? passTotal : Math.max(0, (step.i ?? 0) + 1)
-  const maxValue = Math.max(...step.array)
-
-  const stopPlaying = useCallback(() => {
-    setIsPlaying(false)
-    window.clearInterval(timerRef.current)
-    timerRef.current = null
-  }, [])
-
-  const resetWith = (nextValues) => {
-    stopPlaying()
-    setValues([...nextValues])
-    setStepIndex(0)
-  }
-
-  const goNext = useCallback(() => {
-    setStepIndex((index) => {
-      if (index < steps.length - 1) return index + 1
-
-      stopPlaying()
-      return index
-    })
-  }, [steps.length, stopPlaying])
+  const minValue = step.min == null ? "-" : step.array[step.min]
+  const scanValue = step.j == null ? "-" : step.array[step.j]
 
   useEffect(() => {
     if (!isPlaying) return undefined
 
-    timerRef.current = window.setInterval(goNext, speed)
+    const timer = window.setInterval(() => {
+      setStepIndex((current) => {
+        if (current >= steps.length - 1) {
+          setIsPlaying(false)
+          return current
+        }
 
-    return () => window.clearInterval(timerRef.current)
-  }, [goNext, isPlaying, speed])
+        return current + 1
+      })
+    }, 650)
 
-  useEffect(() => () => window.clearInterval(timerRef.current), [])
+    return () => window.clearInterval(timer)
+  }, [isPlaying, steps.length])
+
+  const resetWith = (nextValues = values) => {
+    setIsPlaying(false)
+    setValues([...nextValues])
+    setManualInput(formatValues(nextValues))
+    setInputError("")
+    setStepIndex(0)
+  }
+
+  const applyManualValues = (event) => {
+    event.preventDefault()
+
+    const result = parseManualValues(manualInput)
+
+    if (result.error) {
+      setInputError(result.error)
+      return
+    }
+
+    resetWith(result.values)
+  }
 
   return (
-    <main className="selection-page">
-      <header className="selection-topbar">
-        <div className="selection-title">
-          <h1>{algo?.title || "Selection Sort"} Visualizer</h1>
-          <p>
-            Watch each pass choose the smallest remaining value, swap it into
-            place, and lock the sorted section from left to right.
-          </p>
-        </div>
-        <button className="selection-back-link" type="button" onClick={onBack}>Back</button>
-      </header>
-
-      <section className="selection-layout" aria-label="Selection sort visualizer">
-        <div className="selection-panel selection-visual-panel">
-          <div className="selection-stats">
-            <div className="selection-stat"><span>Pass</span><strong>{pass} / {passTotal}</strong></div>
-            <div className="selection-stat"><span>Comparisons</span><strong>{step.compareCount}</strong></div>
-            <div className="selection-stat"><span>Swaps</span><strong>{step.swapCount}</strong></div>
-            <div className="selection-stat"><span>Min index</span><strong>{step.min ?? "-"}</strong></div>
-          </div>
-
-          <div className="selection-stage" aria-live="polite">
-            {step.array.map((value, index) => {
-              const classes = [
-                "selection-bar-wrap",
-                index <= step.sortedUntil ? "sorted" : "",
-                index === step.i ? "current" : "",
-                index === step.j ? "compare" : "",
-                index === step.min ? "minimum" : "",
-                step.swap.includes(index) ? "swap" : "",
-              ].filter(Boolean).join(" ")
-
-              return (
-                <div className={classes} aria-label={`Value ${value}`} key={`${index}-${value}`}>
-                  <div className="selection-bar" style={{ height: `${Math.max(20, (value / maxValue) * 310)}px` }} />
-                  <div className="selection-bar-label">{value}</div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="selection-legend" aria-label="Color key">
-            <span><span style={{ background: "#22d3ee" }} />current pass</span>
-            <span><span style={{ background: "#f472b6" }} />comparing</span>
-            <span><span style={{ background: "#fbbf24" }} />smallest</span>
-            <span><span style={{ background: "#fb7185" }} />swap</span>
-            <span><span style={{ background: "#4ade80" }} />sorted</span>
-          </div>
-
-          <div className="selection-controls">
-            <div className="selection-control-buttons">
-              <button className="selection-btn primary" type="button" onClick={() => {
-                if (isPlaying) {
-                  stopPlaying()
-                } else {
-                  if (stepIndex >= steps.length - 1) setStepIndex(0)
-                  setIsPlaying(true)
-                }
-              }}>{isPlaying ? "Pause" : "Play"}</button>
-              <button className="selection-btn" type="button" disabled={stepIndex >= steps.length - 1} onClick={() => {
-                stopPlaying()
-                goNext()
-              }}>Next Step</button>
-              <button className="selection-btn" type="button" onClick={() => resetWith(values)}>Reset</button>
-              <button className="selection-btn" type="button" onClick={() => resetWith(randomArray())}>New Array</button>
+    <SortingVisualizerShell
+      algo={algo}
+      onBack={onBack}
+      stats={[
+        `Time ${algo?.complexity || "O(n²)"}`,
+        `Pass ${pass} / ${passTotal}`,
+        `${steps.length} steps`,
+      ]}
+      stageLabel="Selection sort visualization"
+      visualClassName="selection-sort-visual"
+      visual={
+        <>
+          <div className="selection-hunt-card">
+            <div>
+              <span>Position to fill</span>
+              <strong>{step.i ?? pass}</strong>
             </div>
-            <label className="selection-speed">
-              Speed
-              <input type="range" min="180" max="1300" step="40" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} />
-            </label>
-          </div>
-        </div>
-
-        <aside className="selection-panel selection-side-panel">
-          <div className="selection-step-card">
-            <span>{step.label}</span>
-            <h2>{step.title}</h2>
-            <p>{step.text}</p>
+            <div>
+              <span>Smallest found</span>
+              <strong>{minValue}</strong>
+            </div>
+            <div>
+              <span>Scanner value</span>
+              <strong>{scanValue}</strong>
+            </div>
           </div>
 
-          <div className="selection-code" aria-label="Selection sort code">
-            {codeLines.map((line, index) => {
-              const lineNumber = index + 1
-              const classes = [
-                "selection-code-line",
-                lineNumber === step.activeLine ? "active" : "",
-                lineNumber < step.activeLine ? "done" : "",
-              ].filter(Boolean).join(" ")
+          <div
+            className="selection-candidate-row"
+            style={{ "--item-count": step.array.length }}
+          >
+            {step.array.map((value, index) => {
+              const isCurrent = index === step.i
+              const isScanner = index === step.j
+              const isMinimum = index === step.min
+              const isSwapping = step.swap.includes(index)
+              const isSorted = index <= step.sortedUntil
 
               return (
-                <div className={classes} key={line}>
-                  <span className="selection-line-no">{lineNumber}</span>
-                  <span>{line}</span>
+                <div
+                  className={[
+                    "selection-candidate",
+                    isCurrent ? "selection-candidate--current" : "",
+                    isScanner ? "selection-candidate--scanner" : "",
+                    isMinimum ? "selection-candidate--minimum" : "",
+                    isSwapping ? "selection-candidate--swap" : "",
+                    isSorted ? "selection-candidate--sorted" : "",
+                  ].filter(Boolean).join(" ")}
+                  key={`${value}-${index}`}
+                >
+                  <span>idx {index}</span>
+                  <strong>{value}</strong>
+                  <em>
+                    {isSorted
+                      ? "locked"
+                      : isMinimum
+                        ? "smallest"
+                        : isScanner
+                          ? "checking"
+                          : isCurrent
+                            ? "slot"
+                            : "unsorted"}
+                  </em>
                 </div>
               )
             })}
           </div>
-        </aside>
-      </section>
-    </main>
+        </>
+      }
+      pseudocodeLines={codeLines}
+      activePseudocodeLine={step.activeLine - 1}
+      stepIndex={stepIndex}
+      stepsLength={steps.length}
+      isPlaying={isPlaying}
+      message={`${step.title}. ${step.text}`}
+      manualInput={manualInput}
+      inputError={inputError}
+      manualInputId="selection-manual-array"
+      placeholder="52, 26, 74, 18"
+      onManualInputChange={(value) => {
+        setManualInput(value)
+        setInputError("")
+      }}
+      onApplyManualValues={applyManualValues}
+      onPrevious={() => setStepIndex((current) => Math.max(0, current - 1))}
+      onTogglePlay={() => setIsPlaying((playing) => !playing)}
+      onNext={() =>
+        setStepIndex((current) => Math.min(steps.length - 1, current + 1))
+      }
+      onReset={() => resetWith()}
+      onShuffle={() => resetWith(makeRandomValues())}
+    />
   )
 }
 

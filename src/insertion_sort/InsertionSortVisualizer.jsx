@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import "./InsertionSortVisualizer.css"
+import SortingVisualizerShell from "../components/SortingVisualizerShell"
+import {
+  formatValues,
+  makeRandomValues,
+  parseManualValues,
+} from "../utils/sortingInputs"
 
 const codeLines = [
   "for i = 1 to n - 1",
@@ -192,154 +198,147 @@ function buildSteps(source) {
   return output
 }
 
-function randomArray() {
-  return Array.from({ length: 8 }, () => Math.floor(Math.random() * 75) + 15)
-}
-
 function InsertionSortVisualizer({ algo, onBack }) {
   const [values, setValues] = useState(initialArray)
+  const [manualInput, setManualInput] = useState(formatValues(initialArray))
+  const [inputError, setInputError] = useState("")
   const [stepIndex, setStepIndex] = useState(0)
-  const [speed, setSpeed] = useState(700)
   const [isPlaying, setIsPlaying] = useState(false)
-  const timerRef = useRef(null)
   const steps = useMemo(() => buildSteps(values), [values])
   const step = steps[stepIndex]
   const passTotal = values.length - 1
   const pass = Math.min(passTotal, Math.max(0, step.i ?? step.sortedUntil))
-  const maxValue = Math.max(...step.array)
-
-  const stopPlaying = useCallback(() => {
-    setIsPlaying(false)
-    window.clearInterval(timerRef.current)
-    timerRef.current = null
-  }, [])
-
-  const resetWith = (nextValues) => {
-    stopPlaying()
-    setValues([...nextValues])
-    setStepIndex(0)
-  }
-
-  const goNext = useCallback(() => {
-    setStepIndex((index) => {
-      if (index < steps.length - 1) return index + 1
-
-      stopPlaying()
-      return index
-    })
-  }, [steps.length, stopPlaying])
 
   useEffect(() => {
     if (!isPlaying) return undefined
 
-    timerRef.current = window.setInterval(goNext, speed)
+    const timer = window.setInterval(() => {
+      setStepIndex((current) => {
+        if (current >= steps.length - 1) {
+          setIsPlaying(false)
+          return current
+        }
 
-    return () => window.clearInterval(timerRef.current)
-  }, [goNext, isPlaying, speed])
+        return current + 1
+      })
+    }, 650)
 
-  useEffect(() => () => window.clearInterval(timerRef.current), [])
+    return () => window.clearInterval(timer)
+  }, [isPlaying, steps.length])
+
+  const resetWith = (nextValues = values) => {
+    setIsPlaying(false)
+    setValues([...nextValues])
+    setManualInput(formatValues(nextValues))
+    setInputError("")
+    setStepIndex(0)
+  }
+
+  const applyManualValues = (event) => {
+    event.preventDefault()
+
+    const result = parseManualValues(manualInput)
+
+    if (result.error) {
+      setInputError(result.error)
+      return
+    }
+
+    resetWith(result.values)
+  }
 
   return (
-    <main className="insertion-page">
-      <header className="insertion-topbar">
-        <div className="insertion-title">
-          <h1>{algo?.title || "Insertion Sort"} Visualizer</h1>
-          <p>
-            Watch the algorithm take one key value at a time, shift larger
-            sorted values to the right, and insert the key into its correct spot.
-          </p>
-        </div>
-        <button className="insertion-back-link" type="button" onClick={onBack}>Back</button>
-      </header>
-
-      <section className="insertion-layout" aria-label="Insertion sort visualizer">
-        <div className="insertion-panel insertion-visual-panel">
-          <div className="insertion-stats">
-            <div className="insertion-stat"><span>Pass</span><strong>{pass} / {passTotal}</strong></div>
-            <div className="insertion-stat"><span>Comparisons</span><strong>{step.compareCount}</strong></div>
-            <div className="insertion-stat"><span>Shifts</span><strong>{step.shiftCount}</strong></div>
-            <div className="insertion-stat"><span>Key</span><strong>{step.keyValue ?? "-"}</strong></div>
-          </div>
-
-          <div className="insertion-stage" aria-live="polite">
-            {step.array.map((value, index) => {
-              const classes = [
-                "insertion-bar-wrap",
-                index <= step.sortedUntil ? "sorted" : "",
-                index === step.keyIndex ? "key" : "",
-                index === step.j ? "compare" : "",
-                step.shift.includes(index) ? "shift" : "",
-                index === step.insertIndex ? "insert" : "",
-              ].filter(Boolean).join(" ")
-
-              return (
-                <div className={classes} aria-label={`Value ${value}`} key={`${index}-${value}`}>
-                  <div className="insertion-bar" style={{ height: `${Math.max(20, (value / maxValue) * 310)}px` }} />
-                  <div className="insertion-bar-label">{value}</div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="insertion-legend" aria-label="Color key">
-            <span><span style={{ background: "#4ade80" }} />sorted part</span>
-            <span><span style={{ background: "#fbbf24" }} />key</span>
-            <span><span style={{ background: "#f472b6" }} />comparing</span>
-            <span><span style={{ background: "#fb7185" }} />shift right</span>
-            <span><span style={{ background: "#22d3ee" }} />insert</span>
-          </div>
-
-          <div className="insertion-controls">
-            <div className="insertion-control-buttons">
-              <button className="insertion-btn primary" type="button" onClick={() => {
-                if (isPlaying) {
-                  stopPlaying()
-                } else {
-                  if (stepIndex >= steps.length - 1) setStepIndex(0)
-                  setIsPlaying(true)
-                }
-              }}>{isPlaying ? "Pause" : "Play"}</button>
-              <button className="insertion-btn" type="button" disabled={stepIndex >= steps.length - 1} onClick={() => {
-                stopPlaying()
-                goNext()
-              }}>Next Step</button>
-              <button className="insertion-btn" type="button" onClick={() => resetWith(values)}>Reset</button>
-              <button className="insertion-btn" type="button" onClick={() => resetWith(randomArray())}>New Array</button>
+    <SortingVisualizerShell
+      algo={algo}
+      onBack={onBack}
+      stats={[
+        `Time ${algo?.complexity || "O(n²)"}`,
+        `Pass ${pass} / ${passTotal}`,
+        `${steps.length} steps`,
+      ]}
+      stageLabel="Insertion sort visualization"
+      visualClassName="insertion-sort-visual"
+      visual={
+        <>
+          <div className="insertion-key-card">
+            <div>
+              <span>Key in hand</span>
+              <strong>{step.keyValue ?? "-"}</strong>
             </div>
-            <label className="insertion-speed">
-              Speed
-              <input type="range" min="180" max="1300" step="40" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} />
-            </label>
-          </div>
-        </div>
-
-        <aside className="insertion-panel insertion-side-panel">
-          <div className="insertion-step-card">
-            <span>{step.label}</span>
-            <h2>{step.title}</h2>
-            <p>{step.text}</p>
+            <div>
+              <span>Sorted hand</span>
+              <strong>0 - {step.sortedUntil}</strong>
+            </div>
+            <div>
+              <span>Shifts</span>
+              <strong>{step.shiftCount}</strong>
+            </div>
           </div>
 
-          <div className="insertion-code" aria-label="Insertion sort code">
-            {codeLines.map((line, index) => {
-              const lineNumber = index + 1
-              const classes = [
-                "insertion-code-line",
-                lineNumber === step.activeLine ? "active" : "",
-                lineNumber < step.activeLine ? "done" : "",
-              ].filter(Boolean).join(" ")
+          <div
+            className="insertion-hand-row"
+            style={{ "--item-count": step.array.length }}
+          >
+            {step.array.map((value, index) => {
+              const isKey = index === step.keyIndex
+              const isCompare = index === step.j
+              const isShift =
+                step.shift.includes(index) || index === step.insertIndex
+              const isSorted = index <= step.sortedUntil
 
               return (
-                <div className={classes} key={line}>
-                  <span className="insertion-line-no">{lineNumber}</span>
-                  <span>{line}</span>
+                <div
+                  className={[
+                    "insertion-card",
+                    isSorted ? "insertion-card--sorted" : "",
+                    isKey ? "insertion-card--key" : "",
+                    isCompare ? "insertion-card--compare" : "",
+                    isShift ? "insertion-card--shift" : "",
+                  ].filter(Boolean).join(" ")}
+                  key={`${value}-${index}`}
+                >
+                  <span>idx {index}</span>
+                  <strong>{value}</strong>
+                  <em>
+                    {isKey
+                      ? "key"
+                      : isCompare
+                        ? "compare"
+                        : isShift
+                          ? "move"
+                          : isSorted
+                            ? "sorted"
+                            : "waiting"}
+                  </em>
                 </div>
               )
             })}
           </div>
-        </aside>
-      </section>
-    </main>
+        </>
+      }
+      pseudocodeLines={codeLines}
+      activePseudocodeLine={step.activeLine - 1}
+      stepIndex={stepIndex}
+      stepsLength={steps.length}
+      isPlaying={isPlaying}
+      message={`${step.title}. ${step.text}`}
+      manualInput={manualInput}
+      inputError={inputError}
+      manualInputId="insertion-manual-array"
+      placeholder="54, 28, 76, 19"
+      onManualInputChange={(value) => {
+        setManualInput(value)
+        setInputError("")
+      }}
+      onApplyManualValues={applyManualValues}
+      onPrevious={() => setStepIndex((current) => Math.max(0, current - 1))}
+      onTogglePlay={() => setIsPlaying((playing) => !playing)}
+      onNext={() =>
+        setStepIndex((current) => Math.min(steps.length - 1, current + 1))
+      }
+      onReset={() => resetWith()}
+      onShuffle={() => resetWith(makeRandomValues())}
+    />
   )
 }
 

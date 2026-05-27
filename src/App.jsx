@@ -140,44 +140,38 @@ if (selectedAlgo?.id === "counting") {
     <div className="page">
       <Hero />
 
-      <div className="section-header">
-        <p className="section-label">Explore</p>
-        <h2 className="section-title">Pick an algorithm</h2>
-        <p className="section-sub">
-          {filtered.length} algorithms — click any card to dive in
-        </p>
-      </div>
+      <main className="library">
+        <FilterBar
+          filters={filters}
+          active={active}
+          onFilter={setActive}
+        />
 
-      <FilterBar
-        filters={filters}
-        active={active}
-        onFilter={setActive}
-      />
-
-    <BounceCards
-        items={filtered}
-        enableHover
-        onSelect={(algo) => {
-      console.log("algo selected:", algo?.id)
-          if (
-            algo.id === "bubble" ||
-            algo.id === "towerofhanoi" ||
-            algo.id === "binarysearch" ||
-            algo.id === "heap" ||
-            algo.id === "fibonacci" ||
-            algo.id === "selection" ||
-            algo.id === "insertion" ||
-            algo.id === "factorial" ||
-            algo.id === "backtracking" ||
-            algo.id === "merge" ||
-            algo.id === "mergesort-rec" ||
-            algo.id === "quicksort" ||
-            algo.id === "counting"
-          ) {
-            setSelectedAlgo(algo)
-          }
-        }}
-      />
+        <BounceCards
+          items={filtered}
+          enableHover
+          onSelect={(algo) => {
+            console.log("algo selected:", algo?.id)
+            if (
+              algo.id === "bubble" ||
+              algo.id === "towerofhanoi" ||
+              algo.id === "binarysearch" ||
+              algo.id === "heap" ||
+              algo.id === "fibonacci" ||
+              algo.id === "selection" ||
+              algo.id === "insertion" ||
+              algo.id === "factorial" ||
+              algo.id === "backtracking" ||
+              algo.id === "merge" ||
+              algo.id === "mergesort-rec" ||
+              algo.id === "quicksort" ||
+              algo.id === "counting"
+            ) {
+              setSelectedAlgo(algo)
+            }
+          }}
+        />
+      </main>
     </div>
   )
 }

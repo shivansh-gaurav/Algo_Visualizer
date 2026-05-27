@@ -1,52 +1,54 @@
-import Aurora from "./Aurora"
-import BlurText from "./BlurText"
-// import SplitText from "./SplitText";
+import { motion } from "framer-motion"
 
 function Hero() {
   return (
-    <div className="hero">
-      <Aurora
-        colorStops={["#7c3aed", "#f472b6", "#38bdf8"]}
-        amplitude={1.2}
-        speed={0.4}
-      />
+    <motion.header
+      className="hero"
+      initial={{ opacity: 0, y: -14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
+    >
+      <motion.div
+        className="algovis-logo"
+        aria-label="ALGOVIS"
+        whileHover={{ scale: 1.04 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+      >
+        <span className="logo-mark" aria-hidden="true">
+          {[0, 1, 2, 3].map((bar) => (
+            <motion.span
+              className="logo-bar"
+              key={bar}
+              animate={{ scaleY: [0.45, 1, 0.62, 0.9] }}
+              transition={{
+                duration: 1.4,
+                delay: bar * 0.12,
+                repeat: Infinity,
+                repeatType: "mirror",
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+          <motion.span
+            className="logo-node"
+            animate={{ x: [0, 34, 68, 102, 0] }}
+            transition={{
+              duration: 3.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </span>
 
-      <div className="badge">
-        <div className="dot" />
-        Interactive Learning
-      </div>
-
-   
-
-
-
-
-
-{/* <SplitText
-  text="Hello, yodhkasjhskjahdkhaskhsau!"
-  className="text-2xl font-semibold text-center"
-  delay={50}
-  duration={1.25}
-  ease="power3.out"
-  splitType="chars"
-  from={{ opacity: 0, y: 40 }}
-  to={{ opacity: 1, y: 0 }}
-  threshold={0.1}
-  rootMargin="-100px"
-  textAlign="center"
-  onLetterAnimationComplete={handleAnimationComplete}
-  showCallback
-/> */}
-
-      <h1>
-        <BlurText text="Learn Algorithms Visually" />
-      </h1>
-
-      <p>
-        Animated, beginner-friendly walkthroughs of sorting and recursion —
-        built for people who think in pictures.
-      </p>
-    </div>
+        <motion.span
+          className="logo-word"
+          animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+        >
+          ALGOVIS
+        </motion.span>
+      </motion.div>
+    </motion.header>
   )
 }
 

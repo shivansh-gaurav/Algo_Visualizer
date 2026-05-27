@@ -10,74 +10,115 @@ body {
 }
 
 /* PAGE */
-.page { padding-bottom: 5rem; }
+.page {
+  min-height: 100vh;
+  padding: 2rem 0 4rem;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(124, 58, 237, 0.18), transparent 34rem),
+    radial-gradient(circle at 84% 4%, rgba(56, 189, 248, 0.12), transparent 30rem),
+    #0a0a12;
+}
 
 /* HERO */
 .hero {
   position: relative;
   text-align: center;
-  padding: 5rem 2rem 3rem;
+  padding: 1.8rem 2rem 1.25rem;
   overflow: hidden;
-  min-height: 420px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #0a0a12;
 }
 
-.badge {
-  display: inline-flex;
+.algovis-logo {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 99px;
-  padding: 6px 18px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #c4b5fd;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 1.5rem;
+  justify-content: center;
+  gap: 14px;
   position: relative;
   z-index: 1;
+  width: fit-content;
+  margin: 0 auto;
 }
 
-.dot {
-  width: 7px; height: 7px;
+.logo-mark {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: 5px;
+  width: 122px;
+  height: 44px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
+    rgba(10,10,18,0.72);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.28);
+  overflow: hidden;
+}
+
+.logo-mark::before {
+  content: "";
+  position: absolute;
+  inset: 50% 11px auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56,189,248,0.55), rgba(244,114,182,0.65), transparent);
+}
+
+.logo-bar {
+  display: block;
+  height: 24px;
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, #38bdf8, #7c3aed 62%, #f472b6);
+  box-shadow: 0 0 22px rgba(124,58,237,0.42);
+  transform-origin: bottom;
+}
+
+.logo-node {
+  position: relative;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  align-self: center;
+  justify-self: start;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: #a78bfa;
-  animation: pulse 1.8s ease-in-out infinite;
+  background: #fff;
+  box-shadow:
+    0 0 0 5px rgba(56,189,248,0.12),
+    0 0 26px rgba(244,114,182,0.7);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(0.6); }
-}
-
-.hero h1 {
+.logo-word {
   font-family: 'Syne', sans-serif;
-  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-size: clamp(2rem, 4vw, 3.4rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.2rem;
-  background: linear-gradient(135deg, #fff 30%, #a78bfa 65%, #f472b6 100%);
+  line-height: 1;
+  letter-spacing: 0;
+  background: linear-gradient(110deg, #fff 10%, #38bdf8 34%, #a78bfa 58%, #f472b6 82%, #fff 100%);
+  background-size: 220% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  position: relative;
-  z-index: 1;
 }
 
-.hero p {
-  font-size: 1.05rem;
-  color: rgba(255,255,255,0.5);
-  max-width: 460px;
-  line-height: 1.7;
-  position: relative;
-  z-index: 1;
+.library {
+  width: min(100%, 940px);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.library-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
 /* SECTION HEADER */
@@ -98,25 +139,27 @@ body {
 
 .section-title {
   font-family: 'Syne', sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.55rem;
   font-weight: 800;
   color: #fff;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0;
+  letter-spacing: 0;
 }
 
 .section-sub {
   font-size: 13px;
   color: rgba(255,255,255,0.35);
+  padding-bottom: 0.2rem;
+  white-space: nowrap;
 }
 
 /* FILTER PILLS */
 .filter-row {
   display: flex;
   gap: 8px;
-  padding: 1.5rem 2rem 0;
-  max-width: 860px;
-  margin: 0 auto;
+  padding: 1.5rem 0 0;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .pill {
@@ -149,10 +192,8 @@ body {
 
 
   display: grid;
-  gap: 2.5rem;
-  padding: 7rem 2rem 0;
-  max-width: 860px;
-  margin: 0 auto;
+  gap: 2rem;
+  padding: 5.5rem 0 0;
 }
 
 .bounce-row {
@@ -434,8 +475,36 @@ body {
 }
 
 @media (max-width: 819px) {
+  .page {
+    padding-top: 1rem;
+  }
+
+  .hero {
+    padding: 1.4rem 1.25rem 1rem;
+  }
+
+  .algovis-logo {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .library {
+    padding: 0 1.25rem;
+  }
+
+  .library-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .section-sub {
+    white-space: normal;
+  }
+
   .bounce-cards {
     max-width: 680px;
+    padding-top: 4.75rem;
   }
 
   .bounce-row {
@@ -452,9 +521,23 @@ body {
 }
 
 @media (max-width: 559px) {
+  .hero {
+    padding: 1.2rem 1rem 0.9rem;
+  }
+
+  .logo-mark {
+    width: 104px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .library {
+    padding: 0 1rem;
+  }
+
   .bounce-cards {
     gap: 1.5rem;
-    padding-inline: 1rem;
+    padding-top: 4rem;
   }
 
   .bounce-row {
